@@ -6,7 +6,7 @@
   "homepage": "https://github.com/melike2d/neocord#readme",
   "license": "MIT",
   "main": "dist/index.js",
-  "types": "index.d.ts",
+  "types": "typings/index.d.ts",
   "directories": {
     "lib": "lib"
   },
@@ -23,13 +23,14 @@
   "scripts": {
     "build": "rm -rf dist && tsc --removeComments",
     "build:types": "tsc -d",
-    "bundle:types": "dts-bundle --name @neocord/gateway --main ./dist --removeSource --outputAsModuleFolder --baseDir ./dist --out ../index.d.ts"
+    "lint": "eslint . --ext .ts",
+    "bundle:types": "dts-bundle --name @neocord/gateway --main ./dist --removeSource --outputAsModuleFolder --baseDir ./dist --out ../typings/index.d.ts"
   },
   "bugs": {
     "url": "https://github.com/melike2d/neocord/issues"
   },
   "dependencies": {
-    "@neocord/utils": "^1.0.4",
+    "@neocord/utils": "^1.0.5",
     "rikuesuto": "^1.0.3",
     "ws": "^7.3.1"
   },

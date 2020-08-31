@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@neocord/utils@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.4.tgz#bcb26843d0e6273003c6f3892edb34d3ee87f91c"
-  integrity sha512-HF7Rz9L2On3G9dY3dKKZ83NlHhcU1B/AMd0vBWXT/c9nbnABCaoBrTyN5DeHB8MdmjFYsQI9LCxzGSs5vo3IWg==
+"@neocord/utils@^1.0.5":
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.5.tgz#db111cb2108dde4f947b1cf11f4808c95226ff60"
+  integrity sha512-+6ZOI8gbOME3V5gKz6XI4NDcXYrqIS/4B/iW8U9cVTWfj9bv06SFCmbMMm9ISvzGxBGMPfLwU3++sEopxRO8gw==
 
 "@types/eslint-visitor-keys@^1.0.0":
   version "1.0.0"

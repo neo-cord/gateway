@@ -20,7 +20,7 @@ const manager = new InternalShardingManager({
   shards: "auto", // Creates the amount of recommended shards according to discord.
   compression: "zlib-sync", // see "1".
   useEtf: true, // enables etf encoding, requires the erlpack module
-  intents: Intents.DEFAULT, // Default Intents (defaults to it anyways lol)
+  intents: Intents.DEFAULTS, // Default Intents (defaults to it anyways lol)
   ...
 });
 ```
