@@ -5,6 +5,7 @@
  */
 
 import type { ISMOptions } from "./lib/Manager";
+import { Intents } from "./lib/Intents";
 
 export enum GatewayOpCode {
   Dispatch,
@@ -123,7 +124,7 @@ export const USER_AGENT = "NeoCord (v1 https://github.com/melike2d/neocord)";
 export const DEFAULTS: ISMOptions = {
   useEtf: false,
   compression: false,
-  intents: 0,
+  intents: Intents.DEFAULTS,
   shards: "auto",
   properties: {
     $browser: "NeoCord",
