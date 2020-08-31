@@ -217,7 +217,7 @@ export class InternalShard extends Emitter {
 
     // (3) Setup serialization and compression.
     const q = new URLSearchParams();
-    const encoding = this.manager.useETF ? "etf" : "json";
+    const encoding = this.manager.useEtf ? "etf" : "json";
     q.append("encoding", encoding);
 
     this._serialization = Serialization.create(encoding);

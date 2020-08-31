@@ -13,7 +13,7 @@ import type { CompressionType } from "./compression";
 import type WebSocket from "ws";
 
 const unrecoverable = Object.values(GatewayCloseCode).slice(1);
-const unresumable = [
+const un_resumable = [
   1000,
   4006,
   GatewayCloseCode.InvalidSeq
@@ -26,7 +26,7 @@ export class InternalShardingManager extends Emitter {
   /**
    * All shards currently being managed by the ISM.
    */
-  public readonly shards: Map<string, InternalShard>;
+  public readonly shards: Map<number, InternalShard>;
 
   /**
    * The compression to use.
@@ -41,7 +41,7 @@ export class InternalShardingManager extends Emitter {
   /**
    * The type of serialization.
    */
-  public useETF: boolean;
+  public useEtf: boolean;
 
   /**
    * The options provided to this ISM instance.
@@ -92,7 +92,7 @@ export class InternalShardingManager extends Emitter {
     this.shards = new Map();
     this.destroyed = this.reconnecting = this.ready = false;
     this.options = options as Required<ISMOptions>;
-    this.useETF = options.useEtf ?? false;
+    this.useEtf = options.useEtf ?? false;
     this.compression = options.compression === true
       ? "zlib"
       : options.compression ?? false;
@@ -116,9 +116,14 @@ export class InternalShardingManager extends Emitter {
    * @param token The discord bot token.
    */
   public set token(token: string) {
-    this._token = token;
+    Object.defineProperty(this, "token", {
+      value: token
+    });
   }
 
+  /**
+   * Destroys this manager.
+   */
   public destroy(): void {
     if (!this.destroyed) return;
 
@@ -225,7 +230,7 @@ export class InternalShardingManager extends Emitter {
             return;
           }
 
-          if (unresumable.includes(event.code))
+          if (un_resumable.includes(event.code))
             shard.session.reset();
 
           this.emit(ISMEvent.ShardReconnecting, shard);
@@ -251,6 +256,8 @@ export class InternalShardingManager extends Emitter {
       shard.managed = true;
     }
 
+    this.shards.set(shard.id, shard);
+
     try {
       shard.connect();
     } catch (e) {
@@ -272,6 +279,10 @@ export class InternalShardingManager extends Emitter {
     return true;
   }
 
+  /**
+   * Reconnects all queued shards.
+   * @private
+   */
   private async _reconnect(skipLimit = false): Promise<boolean> {
     if (this.reconnecting) return false;
 
@@ -314,7 +325,7 @@ export class InternalShardingManager extends Emitter {
    * @private
    */
   private _debug(message: string, shard?: number) {
-    this.emit("debug", `(${shard ? `Shard ${shard}` : "Manager"}) ${message.trim()}`);
+    this.emit(ISMEvent.Debug, `(${shard ? `Shard ${shard}` : "Manager"}) ${message.trim()}`);
   }
 
   /**

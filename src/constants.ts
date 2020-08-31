@@ -107,7 +107,8 @@ export enum ISMEvent {
   RawPacket = "raw",
   ShardDisconnect = "shardDisconnected",
   ShardReconnecting = "shardReconnecting",
-  Invalidated = "invalidated"
+  Invalidated = "invalidated",
+  Debug = "debug"
 }
 
 export interface Payload<D = unknown> {
@@ -117,9 +118,9 @@ export interface Payload<D = unknown> {
   s?: number | null;
 }
 
-export const API = "https://discord.com/api/v6";
+export const API = "https://discord.com/api/v8";
 
-export const USER_AGENT = "NeoCord (v1 https://github.com/melike2d/neocord)";
+export const USER_AGENT = "NeoCord (v1 https://github.com/neo-cord)";
 
 export const DEFAULTS: ISMOptions = {
   useEtf: false,

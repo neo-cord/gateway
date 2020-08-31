@@ -111,7 +111,7 @@ export class InternalShardingManager extends Emitter {
   /**
    * The type of serialization.
    */
-  useETF: boolean;
+  useEtf: boolean;
   /**
    * The options provided to this ISM instance.
    */
@@ -145,6 +145,9 @@ export class InternalShardingManager extends Emitter {
    */
   set token(token: string);
 
+  /**
+   * Destroys this manager.
+   */
   destroy(): void;
 
   /**
@@ -217,7 +220,7 @@ interface _intents {
   DirectMessages: number;
   DirectMessageReactions: number;
   DirectMessageTyping: number;
-};
+}
 
 export class Intents extends BitField<IntentResolvable> {
   /**
@@ -347,7 +350,8 @@ export enum ISMEvent {
   RawPacket = "raw",
   ShardDisconnect = "shardDisconnected",
   ShardReconnecting = "shardReconnecting",
-  Invalidated = "invalidated"
+  Invalidated = "invalidated",
+  Debug = "debug"
 }
 
 export interface Payload<D = unknown> {

@@ -1,9 +1,9 @@
-<img src="https://repository-images.githubusercontent.com/291634701/098af480-eb1a-11ea-847b-3d75a38d52c7" />
+<img src="https://repository-images.githubusercontent.com/291619880/8b583d80-eb6d-11ea-8300-3206ef4d5136" />
 
 ---
 
 > A library used to connect to the discord gateway. <br />
-> [NeoCord Support](https://discord.gg/5WD9KhF) &bull; [GitHub Repository](https://github.com/neo-cord/utils)
+> [NeoCord Support](https://discord.gg/5WD9KhF) &bull; [GitHub Repository](https://github.com/neo-cord/gateway)
 
 Requires **node.js v14.x.x** to work.
 
@@ -11,7 +11,7 @@ Requires **node.js v14.x.x** to work.
 yarn add @neocord/gateway
 ```
 
-<h1 align="center">Basic Usage</h1>
+<h2 align="center">Basic Usage</h2>
 
 ```ts
 import { InternalShardingManager, Intents } from "@neocord/gateway";
