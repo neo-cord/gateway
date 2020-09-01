@@ -344,7 +344,7 @@ export class InternalShard extends Emitter {
       this._debug("Shard did not receive any more guild packets within 15 seconds.");
       this.emit(ShardEvent.FullReady, this.expectingGuilds);
       delete this._readyTimeout;
-    }, 15e3)
+    }, 15e3);
   }
 
   /**

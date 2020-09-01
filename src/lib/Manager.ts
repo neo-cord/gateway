@@ -5,6 +5,7 @@
  */
 
 import { Emitter, mergeObjects, sleep } from "@neocord/utils";
+import { Collection } from "@neocord/storage";
 import { make } from "rikuesuto";
 import { API, DEFAULTS, GatewayCloseCode, ISMEvent, ShardEvent, USER_AGENT } from "../constants";
 import { InternalShard } from "./InternalShard";
@@ -26,7 +27,7 @@ export class InternalShardingManager extends Emitter {
   /**
    * All shards currently being managed by the ISM.
    */
-  public readonly shards: Map<number, InternalShard>;
+  public readonly shards: Collection<number, InternalShard>;
 
   /**
    * The compression to use.
@@ -89,7 +90,7 @@ export class InternalShardingManager extends Emitter {
     options = mergeObjects(options, DEFAULTS);
     super();
 
-    this.shards = new Map();
+    this.shards = new Collection();
     this.destroyed = this.reconnecting = this.ready = false;
     this.options = options as Required<ISMOptions>;
     this.useEtf = options.useEtf ?? false;

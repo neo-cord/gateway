@@ -22,7 +22,7 @@ const intents = {
   DirectMessages: 1 << 12,
   DirectMessageReactions: 1 << 13,
   DirectMessageTyping: 1 << 14
-}
+};
 
 export class Intents extends BitField<IntentResolvable> {
   /**
