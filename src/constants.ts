@@ -125,7 +125,7 @@ export const USER_AGENT = "NeoCord (v1 https://github.com/neo-cord)";
 export const DEFAULTS: ISMOptions = {
   useEtf: false,
   compression: false,
-  intents: Intents.DEFAULTS,
+  intents: Intents.DEFAULT,
   shards: "auto",
   properties: {
     $browser: "NeoCord",

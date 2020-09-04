@@ -9,7 +9,7 @@
     "skipLibCheck": true,
 
     /* Compiling */
-    "inlineSourceMap": true,
+    "inlineSourceMap": false,
     "declaration": false,
     "allowJs": true,
     "baseUrl": "./src",

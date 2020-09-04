@@ -4,8 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Emitter, mergeObjects, sleep } from "@neocord/utils";
-import { Collection } from "@neocord/storage";
+import { Emitter, mergeObjects, sleep, Collection } from "@neocord/utils";
 import { make } from "rikuesuto";
 import { API, DEFAULTS, GatewayCloseCode, ISMEvent, ShardEvent, USER_AGENT } from "../constants";
 import { InternalShard } from "./InternalShard";

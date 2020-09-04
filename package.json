@@ -1,6 +1,6 @@
 {
   "name": "@neocord/gateway",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Connects to the discord gateway.",
   "author": "MeLike2D <gino@melike2d.me>",
   "homepage": "https://github.com/neo-cord/gateway#readme",
@@ -24,19 +24,18 @@
     "url": "https://github.com/neo-cord/gateway/issues"
   },
   "dependencies": {
-    "@neocord/storage": "^1.0.0",
-    "@neocord/utils": "^1.0.5",
+    "@neocord/utils": "^1.0.7",
     "rikuesuto": "^1.0.3",
     "ws": "^7.3.1"
   },
   "devDependencies": {
-    "@types/node": "^14.6.2",
+    "@types/node": "^14.6.4",
     "@types/pako": "^1.0.1",
     "@types/ws": "^7.2.6",
-    "@typescript-eslint/eslint-plugin": "^3.10.1",
-    "@typescript-eslint/parser": "^3.10.1",
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.1",
     "erlpack": "^0.1.3",
-    "eslint": "^7.8.0",
+    "eslint": "^7.8.1",
     "pako": "^1.0.11",
     "typescript": "^4.0.2",
     "zlib-sync": "^0.1.7"

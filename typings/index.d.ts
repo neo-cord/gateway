@@ -1,6 +1,5 @@
-import type { BitField, BitFieldObject, Emitter } from "@neocord/utils";
-import type { Collection } from "@neocord/storage";
-import type { EventEmitter } from "events";
+import { BitField, BitFieldObject, Collection, Emitter } from "@neocord/utils";
+import { EventEmitter } from "events";
 
 export class CustomError {
   /**
@@ -60,6 +59,11 @@ export class InternalShard extends Emitter {
    * The sequence when the socket closed.
    */
   get closingSequence(): number;
+
+  /**
+   * The latency of this shard.
+   */
+  get latency(): number;
 
   /**
    * Whether or not this shard is connected.
@@ -197,30 +201,29 @@ export interface SessionStartLimit {
   reset_after: number;
 }
 
-interface _intents {
-  Guilds: number;
-  GuildMembers: number;
-  GuildBans: number;
-  GuildEmojis: number;
-  GuildIntegrations: number;
-  GuildWebhooks: number;
-  GuildInvites: number;
-  GuildVoiceStates: number;
-  GuildPresences: number;
-  GuildMessages: number;
-  GuildMessageReactions: number;
-  GuildMessageTyping: number;
-  DirectMessages: number;
-  DirectMessageReactions: number;
-  DirectMessageTyping: number;
+export enum GatewayIntent {
+  Guilds = 1,
+  GuildMembers = 2,
+  GuildBans = 4,
+  GuildEmojis = 8,
+  GuildIntegrations = 16,
+  GuildWebhooks = 32,
+  GuildInvites = 64,
+  GuildVoiceStates = 128,
+  GuildPresences = 256,
+  GuildMessages = 256,
+  GuildMessageReactions = 1024,
+  GuildMessageTyping = 2048,
+  DirectMessages = 4096,
+  DirectMessageReactions = 8192,
+  DirectMessageTyping = 16384
 }
 
 export class Intents extends BitField<IntentResolvable> {
   /**
    * All intents that were provided by discord.
    */
-  static FLAGS: _intents;
-
+  static FLAGS: typeof GatewayIntent;
   /**
    * All privileged intents ORed together.
    */
@@ -232,15 +235,15 @@ export class Intents extends BitField<IntentResolvable> {
   /**
    * Recommended defaults by NeoCord.
    */
-  static DEFAULTS: number;
+  static DEFAULT: number;
 }
 
 export type IntentResolvable =
-  keyof typeof _intents
+  GatewayIntent
+  | keyof typeof GatewayIntent
   | number
   | BitFieldObject
-  | ((keyof typeof _intents) | number | BitFieldObject)[];
-export {};
+  | ((keyof typeof GatewayIntent) | number | BitFieldObject)[];
 
 export enum GatewayOpCode {
   Dispatch = 0,
@@ -597,4 +600,3 @@ export abstract class Serialization {
 
 export type SerializationType = "json" | "etf";
 export type RawData = string | Buffer | Buffer[] | ArrayBuffer;
-

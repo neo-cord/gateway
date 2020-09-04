@@ -137,6 +137,13 @@ export class InternalShard extends Emitter {
   }
 
   /**
+   * The latency of this shard.
+   */
+  public get latency(): number {
+    return this.heartbeat.latency;
+  }
+
+  /**
    * Whether or not this shard is connected.
    */
   public get connected(): boolean {
@@ -256,8 +263,7 @@ export class InternalShard extends Emitter {
     let pk!: Payload<Dictionary>;
     try {
       pk = this._serialization.decode(data) as Payload<Dictionary>;
-      if (pk.op === GatewayOpCode.Dispatch)
-        this.manager.emit(ISMEvent.RawPacket, pk);
+      this.manager.emit(ISMEvent.RawPacket, pk);
     } catch (e) {
       this.emit(ShardEvent.Error, e);
       return;
@@ -285,9 +291,8 @@ export class InternalShard extends Emitter {
 
     if (pk.s as number > this._seq + 1) {
       this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
-    } else {
-      this._seq = pk.s as number;
     }
+    this._seq = pk.s as number;
 
     switch (pk.op) {
       case GatewayOpCode.Hello:
