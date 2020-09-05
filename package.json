@@ -1,6 +1,6 @@
 {
   "name": "@neocord/gateway",
-  "version": "1.0.5-1",
+  "version": "1.0.5-2",
   "description": "Connects to the discord gateway.",
   "author": "MeLike2D <gino@melike2d.me>",
   "homepage": "https://github.com/neo-cord/gateway#readme",
@@ -24,7 +24,7 @@
     "url": "https://github.com/neo-cord/gateway/issues"
   },
   "dependencies": {
-    "@neocord/utils": "^1.0.7",
+    "@neocord/utils": "^1.0.10",
     "rikuesuto": "^1.0.3",
     "ws": "^7.3.1"
   },

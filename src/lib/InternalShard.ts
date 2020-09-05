@@ -289,10 +289,11 @@ export class InternalShard extends Emitter {
         break;
     }
 
-    if (pk.s as number > this._seq + 1) {
-      this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
+
+    if (pk.s != null) {
+      if (pk.s > this._seq + 1) this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
+      this._seq = pk.s;
     }
-    this._seq = pk.s as number;
 
     switch (pk.op) {
       case GatewayOpCode.Hello:
