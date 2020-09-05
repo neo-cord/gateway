@@ -831,9 +831,9 @@ reusify@^1.0.4:
   integrity sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==
 
 rikuesuto@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/rikuesuto/-/rikuesuto-1.0.3.tgz#525ce83f18919755ec218a41cfe202b992bd7de9"
-  integrity sha512-DOgTRRnQrx40jNpeM7XV9cxkD9lSHVDK5e94fKaIEArHIJbrjtfWED2UhF1j4U7y0pOqxmMh+ZmK9rfdDdUgLQ==
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/rikuesuto/-/rikuesuto-1.0.5.tgz#1a2ad7ebd72b85f26de2779ffbf7a8c358a8c76a"
+  integrity sha512-AL1XYbufmDy8loS1zrqrIUOnfG+mGn+vG+kRxKjKjlWrLyQdtfBOvNGqxgzzyOQryC5ga8fK8NPpgq/6V65LFA==
 
 rimraf@2.6.3:
   version "2.6.3"
