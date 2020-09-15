@@ -7,7 +7,7 @@
 import { Emitter, mergeObjects, sleep, Collection } from "@neocord/utils";
 import { make } from "rikuesuto";
 import { API, DEFAULTS, GatewayCloseCode, ISMEvent, ShardEvent, USER_AGENT } from "../constants";
-import { InternalShard } from "./InternalShard";
+import { Shard } from "./Shard";
 
 import type { CompressionType } from "./compression";
 import type WebSocket from "ws";
@@ -22,11 +22,11 @@ const un_resumable = [
 /**
  * Handles internalized bot sharding.
  */
-export class InternalShardingManager extends Emitter {
+export class ShardManager extends Emitter {
   /**
    * All shards currently being managed by the ISM.
    */
-  public readonly shards: Collection<number, InternalShard>;
+  public readonly shards: Collection<number, Shard>;
 
   /**
    * The compression to use.
@@ -73,7 +73,7 @@ export class InternalShardingManager extends Emitter {
    * The shard connect queue.
    * @private
    */
-  private _queue!: Set<InternalShard>;
+  private _queue!: Set<Shard>;
 
   /**
    * The session start limit.
@@ -82,7 +82,7 @@ export class InternalShardingManager extends Emitter {
   private _limit!: SessionStartLimit;
 
   /**
-   * Creates a new InternalShardingManager.
+   * Creates a new ShardManager.
    * @param options
    */
   public constructor(options: ISMOptions = {}) {
@@ -177,7 +177,9 @@ export class InternalShardingManager extends Emitter {
     // (2) Finalize
     this._limit = startLimit;
     this._shards = shards.length;
-    this._queue = new Set(shards.map(id => new InternalShard(this, id)));
+    this._queue = new Set(shards.map(id => new Shard(this, id)));
+		this._debug(`Using ${this.useEtf ? "ETF" : "JSON"} encoding and ${this.compression ? `the '${this.compression}' module for zlib` : "no"} compression.`)
+
 
     // (3) Handle the start limit and start a shard.
     await this._handleLimit(remaining, reset_after);

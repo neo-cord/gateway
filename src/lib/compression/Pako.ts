@@ -5,9 +5,9 @@
  */
 
 import { ZlibSync } from "./ZlibSync";
+import { CustomError } from "../../errors/CustomError";
 
 import type { Inflate } from "pako";
-import { CustomError } from "../../errors/CustomError";
 
 let pako: typeof import("pako");
 try {

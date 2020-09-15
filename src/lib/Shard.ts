@@ -12,15 +12,15 @@ import { Heartbeat, Session } from "./connection";
 import { Compression } from "./compression";
 import { RawData, Serialization } from "./serialization";
 
-import type { InternalShardingManager } from "./Manager";
+import type { ShardManager } from "./Manager";
 
 const connectionStates = Object.keys(WebSocket);
 
-export class InternalShard extends Emitter {
+export class Shard extends Emitter {
   /**
    * The internal sharding manager.
    */
-  public readonly manager: InternalShardingManager;
+  public readonly manager: ShardManager;
 
   /**
    * The ID of this shard.
@@ -110,7 +110,7 @@ export class InternalShard extends Emitter {
    * @param manager The ISM instance.
    * @param id The ID of this shard.
    */
-  public constructor(manager: InternalShardingManager, id: number) {
+  public constructor(manager: ShardManager, id: number) {
     super();
 
     this.manager = manager;
@@ -422,4 +422,3 @@ export interface DestroyOptions {
   emit?: boolean;
   log?: boolean;
 }
-

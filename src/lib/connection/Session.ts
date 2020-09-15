@@ -7,14 +7,14 @@
 import { Timers } from "@neocord/utils";
 import { GatewayOpCode, Status } from "../../constants";
 
-import type { InternalShard } from "../InternalShard";
-import type { InternalShardingManager } from "../Manager";
+import type { Shard } from "../Shard";
+import type { ShardManager } from "../Manager";
 
 export class Session {
   /**
    * The shard that this session is for.
    */
-  public readonly shard: InternalShard;
+  public readonly shard: Shard;
 
   /**
    * The id of this session.
@@ -30,14 +30,14 @@ export class Session {
   /**
    * @param shard
    */
-  public constructor(shard: InternalShard) {
+  public constructor(shard: Shard) {
     this.shard = shard;
   }
 
   /**
    * The sharding manager.
    */
-  public get manager(): InternalShardingManager {
+  public get manager(): ShardManager {
     return this.shard.manager;
   }
 

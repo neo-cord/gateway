@@ -5,9 +5,9 @@
  */
 
 import { RawData, Serialization } from "./Serialization";
+import { CustomError } from "../../errors/CustomError";
 
 import type { Payload } from "../../constants";
-import { CustomError } from "../../errors/CustomError";
 
 let etf: typeof import("erlpack");
 try {

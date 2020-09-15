@@ -7,7 +7,7 @@
 import { GatewayOpCode } from "../../constants";
 import { Timers } from "@neocord/utils";
 
-import type { InternalShard } from "../InternalShard";
+import type { Shard } from "../Shard";
 
 /**
  * Handles a shards heartbeat.
@@ -31,7 +31,7 @@ export class Heartbeat {
   /**
    * The shard this heartbeat belongs to.
    */
-  public shard: InternalShard;
+  public shard: Shard;
 
   /**
    * The heartbeat latency.
@@ -47,7 +47,7 @@ export class Heartbeat {
   /**
    * @param shard
    */
-  public constructor(shard: InternalShard) {
+  public constructor(shard: Shard) {
     this.shard = shard;
   }
 
