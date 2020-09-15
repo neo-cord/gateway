@@ -178,8 +178,7 @@ export class ShardManager extends Emitter {
     this._limit = startLimit;
     this._shards = shards.length;
     this._queue = new Set(shards.map(id => new Shard(this, id)));
-		this._debug(`Using ${this.useEtf ? "ETF" : "JSON"} encoding and ${this.compression ? `the '${this.compression}' module for zlib` : "no"} compression.`)
-
+    this._debug(`Using ${this.useEtf ? "ETF" : "JSON"} encoding and ${this.compression ? `the '${this.compression}' module for zlib` : "no"} compression.`);
 
     // (3) Handle the start limit and start a shard.
     await this._handleLimit(remaining, reset_after);
