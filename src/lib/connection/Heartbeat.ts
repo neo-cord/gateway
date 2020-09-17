@@ -71,7 +71,7 @@ export class Heartbeat {
 
     if (this._interval) {
       Timers.clearInterval(this._interval);
-      delete this._interval;
+      this._interval = undefined;
     }
   }
 
