@@ -273,7 +273,7 @@ export class Shard extends Emitter {
     let pk!: Payload<Dictionary>;
     try {
       pk = this._serialization.decode(data) as Payload<Dictionary>;
-      this.manager.emit(ISMEvent.RawPacket, pk);
+      this.manager.emit(ISMEvent.RawPacket, pk, this);
     } catch (e) {
       this.emit(ShardEvent.Error, e);
       return;
