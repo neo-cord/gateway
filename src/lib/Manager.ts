@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Emitter, mergeObjects, sleep, Collection } from "@neocord/utils";
+import { Collection, define, Emitter, mergeObjects, sleep } from "@neocord/utils";
 import { make } from "rikuesuto";
 import { API, DEFAULTS, GatewayCloseCode, ISMEvent, ShardEvent, USER_AGENT } from "../constants";
 import { Shard } from "./Shard";
@@ -89,6 +89,9 @@ export class ShardManager extends Emitter {
     options = mergeObjects(options, DEFAULTS);
     super();
 
+    const wr = [ "_limit", "_queue", "_shards" ];
+    for (const w of wr) define({ writable: true })(this, w);
+
     this.shards = new Collection();
     this.destroyed = this.reconnecting = this.ready = false;
     this.options = options as Required<ISMOptions>;
@@ -96,6 +99,13 @@ export class ShardManager extends Emitter {
     this.compression = options.compression === true
       ? "zlib"
       : options.compression ?? false;
+  }
+
+  /**
+   * The average latency across all shards.
+   */
+  public get latency(): number {
+    return this.shards.reduce((l, s) => l += s.latency, 0) / this.shards.size;
   }
 
   /**
@@ -145,7 +155,6 @@ export class ShardManager extends Emitter {
    * Connects all shards.
    */
   public async connect(): Promise<void> {
-    // (0) Fetch Session Info
     const {
       url,
       shards: shardCount,

@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Bucket, Emitter, Timers } from "@neocord/utils";
+import { Bucket, define, Emitter, Timers } from "@neocord/utils";
 import WebSocket from "ws";
 import { URLSearchParams } from "url";
 import { GatewayEvent, GatewayOpCode, ISMEvent, Payload, ShardEvent, Status } from "../constants";
@@ -70,22 +70,10 @@ export class Shard extends Emitter {
   private _compression?: Compression;
 
   /**
-   * The shard sequence when the websocket closes.
-   * @private
-   */
-  private _closingSeq = 0;
-
-  /**
    * The rate-limit bucket.
    * @private
    */
-  private _bucket: Bucket
-
-  /**
-   * The current sequence.
-   * @private
-   */
-  private _seq = -1;
+  private _bucket!: Bucket
 
   /**
    * The websocket instance.
@@ -94,16 +82,28 @@ export class Shard extends Emitter {
   private _ws?: WebSocket;
 
   /**
-   * The payloads that are waiting to be sent.
-   * @private
-   */
-  private _queue: Payload[] = [];
-
-  /**
    * The ready timeout.
    * @private
    */
   private _readyTimeout?: NodeJS.Timeout;
+
+  /**
+   * The shard sequence when the websocket closes.
+   * @private
+   */
+  private _closingSeq!: number;
+
+  /**
+   * The current sequence.
+   * @private
+   */
+  private _seq!: number;
+
+  /**
+   * The payloads that are waiting to be sent.
+   * @private
+   */
+  private readonly _queue!: Payload[];
 
   /**
    * Creates a new InternalShard instance.
@@ -117,9 +117,16 @@ export class Shard extends Emitter {
     this.id = id;
     this.status = Status.Idle;
 
+    const writable = [ "_seq", "_closingSeq", "_bucket", "_compression", "_serialization", "_queue", "_ws" ];
+    for (const key of writable) define({ writable: true })(this, key);
+
+    this._seq = -1;
+    this._closingSeq = 0;
+    this._bucket = new Bucket(120, 60);
+    this._queue = [];
+
     this.heartbeat = new Heartbeat(this);
     this.session = new Session(this);
-    this._bucket = new Bucket(120, 6e4);
   }
 
   /**
@@ -167,6 +174,9 @@ export class Shard extends Emitter {
     this._queue[prioritized ? "unshift" : "push"](data);
   }
 
+  /**
+   * Destroys the websocket connection.
+   */
   public destroy(options: DestroyOptions = {
     code: 1000,
     emit: true,
@@ -291,7 +301,7 @@ export class Shard extends Emitter {
 
 
     if (pk.s != null) {
-      if (pk.s > this._seq + 1) this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
+      if (this._seq !== -1 && pk.s > this._seq + 1) this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
       this._seq = pk.s;
     }
 

@@ -5,7 +5,7 @@
  */
 
 import { GatewayOpCode } from "../../constants";
-import { Timers } from "@neocord/utils";
+import { define, Timers } from "@neocord/utils";
 
 import type { Shard } from "../Shard";
 
@@ -49,6 +49,7 @@ export class Heartbeat {
    */
   public constructor(shard: Shard) {
     this.shard = shard;
+    define({ writable: true })(this, "_interval");
   }
 
   /**

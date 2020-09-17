@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Timers } from "@neocord/utils";
+import { define, Timers } from "@neocord/utils";
 import { GatewayOpCode, Status } from "../../constants";
 
 import type { Shard } from "../Shard";
@@ -32,6 +32,7 @@ export class Session {
    */
   public constructor(shard: Shard) {
     this.shard = shard;
+    define({ writable: true })(this, "_helloTimeout");
   }
 
   /**
@@ -69,7 +70,7 @@ export class Session {
   public hello(): void {
     if (this._helloTimeout) {
       Timers.clearTimeout(this._helloTimeout);
-      delete this._helloTimeout;
+      this._helloTimeout = undefined;
     }
 
     this.identify();
