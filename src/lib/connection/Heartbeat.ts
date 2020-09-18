@@ -81,7 +81,9 @@ export class Heartbeat {
   public ack(): void {
     this.acked = true;
     this.latency = Date.now() - this.last;
-    this._debug(`Gateway acknowledged our heartbeat, latency: ${this.latency}ms`);
+    this._debug(
+      `Gateway acknowledged our heartbeat, latency: ${this.latency}ms`
+    );
   }
 
   /**
@@ -89,12 +91,27 @@ export class Heartbeat {
    * @param {string} reason The heartbeat reason.
    * @param {boolean} [ignore] The shard statuses to ignore.
    */
-  public new(reason: string, ignore: boolean = [ Status.WaitingForGuilds, Status.Identifying, Status.Resuming ].includes(this.shard.status)): void {
+  public new(
+    reason: string,
+    ignore: boolean = [
+      Status.WaitingForGuilds,
+      Status.Identifying,
+      Status.Resuming,
+    ].includes(this.shard.status)
+  ): void {
     if (ignore && !this.acked) {
-      this._debug("Didn't process last heartbeat ack yet but we are still connected. Sending one now...");
+      this._debug(
+        "Didn't process last heartbeat ack yet but we are still connected. Sending one now..."
+      );
     } else if (!this.acked) {
-      this._debug("Didn't receive a heartbeat last time. Assuming zombie connection, destroying and reconnecting.");
-      this._debug(`Zombie Connection: Stats = ${Status[this.shard.status]}, Sequence = ${this.shard.sequence}`);
+      this._debug(
+        "Didn't receive a heartbeat last time. Assuming zombie connection, destroying and reconnecting."
+      );
+      this._debug(
+        `Zombie Connection: Stats = ${Status[this.shard.status]}, Sequence = ${
+          this.shard.sequence
+        }`
+      );
       return this.shard.destroy({ code: 4009, reset: true });
     }
 
@@ -109,7 +126,10 @@ export class Heartbeat {
    * @private
    */
   private _debug(message: string): void {
-    this.shard.manager.emit("debug", `(Shard ${this.shard.id}) Heartbeat: ${message}`);
+    this.shard.manager.emit(
+      "debug",
+      `(Shard ${this.shard.id}) Heartbeat: ${message}`
+    );
     return;
   }
 
@@ -119,7 +139,10 @@ export class Heartbeat {
    */
   private _init(): void {
     this._debug(`Now sending a heartbeat every: ${this.interval} ms`);
-    this._interval = Timers.setInterval(() => this.new("interval"), this.interval as number);
+    this._interval = Timers.setInterval(
+      () => this.new("interval"),
+      this.interval as number
+    );
     return;
   }
 }

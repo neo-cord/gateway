@@ -33,7 +33,7 @@ export class ZlibSync extends Compression {
       return;
     } else if (Array.isArray(data)) {
       this.emit("debug", "Received fragmented buffer message.");
-      data.forEach(buf => this._addBuffer(buf));
+      data.forEach((buf) => this._addBuffer(buf));
       return;
     } else if (data instanceof ArrayBuffer) {
       this.emit("debug", "Received array buffer message.");
@@ -41,7 +41,10 @@ export class ZlibSync extends Compression {
       return;
     }
 
-    this.emit("error", new CustomError("CompressionError", "Received invalid data."));
+    this.emit(
+      "error",
+      new CustomError("CompressionError", "Received invalid data.")
+    );
   }
 
   /**
@@ -59,15 +62,20 @@ export class ZlibSync extends Compression {
    */
   private _addBuffer(buf: Buffer): void {
     const l = buf.length;
-    if (l >= 4 && buf.readUInt32BE(l - 4) === 0xFFFF) {
+    if (l >= 4 && buf.readUInt32BE(l - 4) === 0xffff) {
       this._zlib.push(buf, zlib.Z_SYNC_FLUSH);
       if (this._zlib.err) {
-        this.emit("error", new CustomError("CompressionError", `${this._zlib.err}: ${this._zlib.msg}`));
+        this.emit(
+          "error",
+          new CustomError(
+            "CompressionError",
+            `${this._zlib.err}: ${this._zlib.msg}`
+          )
+        );
         return;
       }
 
-      if (this._zlib.result)
-        this.emit("data", Buffer.from(this._zlib.result));
+      if (this._zlib.result) this.emit("data", Buffer.from(this._zlib.result));
 
       return;
     }

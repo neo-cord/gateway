@@ -48,16 +48,19 @@ export abstract class Compression extends EventEmitter {
   public static create(type: CompressionType): Compression {
     switch (type) {
       case "zlib":
-        return new (require("./Zlib")).Zlib();
+        return new (require("./Zlib").Zlib)();
       case "zlib-sync":
         try {
           require("zlib-sync");
         } catch (e) {
           void e;
-          throw new CustomError("CompressionError", "Module 'zlib-sync' not found.");
+          throw new CustomError(
+            "CompressionError",
+            "Module 'zlib-sync' not found."
+          );
         }
 
-        return new (require("./ZlibSync")).ZlibSync();
+        return new (require("./ZlibSync").ZlibSync)();
       case "pako":
         try {
           require("pako");
@@ -66,7 +69,7 @@ export abstract class Compression extends EventEmitter {
           throw new CustomError("CompressionError", "Module 'pako' not found.");
         }
 
-        return new (require("./Pako")).Pako();
+        return new (require("./Pako").Pako)();
       default:
         throw new TypeError(`Invalid compression type: ${type}`);
     }
@@ -76,7 +79,7 @@ export abstract class Compression extends EventEmitter {
    * Adds compressed data to the compression handler.
    * @param data
    */
-  public abstract add(data: Compressible): void
+  public abstract add(data: Compressible): void;
 
   /**
    * Initializes the compression handler.

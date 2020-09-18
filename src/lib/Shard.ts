@@ -7,7 +7,14 @@
 import { Bucket, define, Emitter, Timers } from "@neocord/utils";
 import WebSocket from "ws";
 import { URLSearchParams } from "url";
-import { GatewayEvent, GatewayOpCode, ISMEvent, Payload, ShardEvent, Status } from "../constants";
+import {
+  GatewayEvent,
+  GatewayOpCode,
+  ISMEvent,
+  Payload,
+  ShardEvent,
+  Status,
+} from "../constants";
 import { Heartbeat, Session } from "./connection";
 import { Compression } from "./compression";
 import { RawData, Serialization } from "./serialization";
@@ -61,7 +68,7 @@ export class Shard extends Emitter {
    * The serialization handler.
    * @private
    */
-  private _serialization!: Serialization
+  private _serialization!: Serialization;
 
   /**
    * The compression handler.
@@ -73,7 +80,7 @@ export class Shard extends Emitter {
    * The rate-limit bucket.
    * @private
    */
-  private _bucket!: Bucket
+  private _bucket!: Bucket;
 
   /**
    * The websocket instance.
@@ -117,7 +124,15 @@ export class Shard extends Emitter {
     this.id = id;
     this.status = Status.Idle;
 
-    const writable = [ "_seq", "_closingSeq", "_bucket", "_compression", "_serialization", "_queue", "_ws" ];
+    const writable = [
+      "_seq",
+      "_closingSeq",
+      "_bucket",
+      "_compression",
+      "_serialization",
+      "_queue",
+      "_ws",
+    ];
     for (const key of writable) define({ writable: true })(this, key);
 
     this._seq = -1;
@@ -154,9 +169,10 @@ export class Shard extends Emitter {
    * Whether or not this shard is connected.
    */
   public get connected(): boolean {
-    return this.status === Status.Ready
-      || (!!this._ws
-        && this._ws.readyState === WebSocket.OPEN);
+    return (
+      this.status === Status.Ready ||
+      (!!this._ws && this._ws.readyState === WebSocket.OPEN)
+    );
   }
 
   /**
@@ -177,14 +193,18 @@ export class Shard extends Emitter {
   /**
    * Destroys the websocket connection.
    */
-  public destroy(options: DestroyOptions = {
-    code: 1000,
-    emit: true,
-    log: true,
-    reset: false
-  }): void {
+  public destroy(
+    options: DestroyOptions = {
+      code: 1000,
+      emit: true,
+      log: true,
+      reset: false,
+    }
+  ): void {
     if (options.log)
-      this._debug(`Destroying... Code: ${options.code}, Resetting?: ${options.reset}`);
+      this._debug(
+        `Destroying... Code: ${options.code}, Resetting?: ${options.reset}`
+      );
 
     // (0) Reset the heartbeat.
     this.heartbeat.reset();
@@ -193,7 +213,9 @@ export class Shard extends Emitter {
     if (this._ws) {
       if (this._ws.readyState === WebSocket.OPEN) this._ws.close();
       else {
-        this._debug(`WebSocket State: ${connectionStates[this._ws.readyState]}`);
+        this._debug(
+          `WebSocket State: ${connectionStates[this._ws.readyState]}`
+        );
 
         try {
           this._ws.close();
@@ -228,7 +250,9 @@ export class Shard extends Emitter {
 
     // (1) If a socket is already defined, destroy it.
     if (this._ws) {
-      this._debug("A connection is already present, cleaning up before reconnecting.");
+      this._debug(
+        "A connection is already present, cleaning up before reconnecting."
+      );
       this.destroy();
     }
 
@@ -240,7 +264,7 @@ export class Shard extends Emitter {
     this._serialization = Serialization.create(encoding);
     if (this.manager.compression) {
       this._compression = Compression.create(this.manager.compression)
-        .on("data", buffer => this._packet(buffer))
+        .on("data", (buffer) => this._packet(buffer))
         .on("error", (e) => this._debug(`Compression Error: ${e.message}`))
         .on("debug", (message) => this._debug(message));
 
@@ -248,7 +272,10 @@ export class Shard extends Emitter {
     }
 
     // (4) Set the status and wait for the hello op code.
-    this.status = this.status === Status.Disconnected ? Status.Reconnecting : Status.Connecting;
+    this.status =
+      this.status === Status.Disconnected
+        ? Status.Reconnecting
+        : Status.Connecting;
     this.connectedAt = Date.now();
     this.session.waitForHello();
 
@@ -285,7 +312,9 @@ export class Shard extends Emitter {
 
         this.session.id = pk.d?.session_id;
         this.status = Status.WaitingForGuilds;
-        this.expectingGuilds = new Set<string>(pk.d?.guilds?.map((g: Dictionary) => g.id));
+        this.expectingGuilds = new Set<string>(
+          pk.d?.guilds?.map((g: Dictionary) => g.id)
+        );
 
         this.heartbeat.acked = true;
         this.heartbeat.new("ready");
@@ -299,9 +328,9 @@ export class Shard extends Emitter {
         break;
     }
 
-
     if (pk.s != null) {
-      if (this._seq !== -1 && pk.s > this._seq + 1) this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
+      if (this._seq !== -1 && pk.s > this._seq + 1)
+        this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
       this._seq = pk.s;
     }
 
@@ -332,7 +361,10 @@ export class Shard extends Emitter {
         this.heartbeat.ack();
         break;
       default:
-        if (this.status === Status.WaitingForGuilds && pk.t === GatewayEvent.GuildCreate) {
+        if (
+          this.status === Status.WaitingForGuilds &&
+          pk.t === GatewayEvent.GuildCreate
+        ) {
           this.expectingGuilds?.delete(pk.d?.id);
           this._checkReady();
         }
@@ -357,7 +389,9 @@ export class Shard extends Emitter {
 
     this._readyTimeout = Timers.setTimeout(() => {
       this.status = Status.Ready;
-      this._debug("Shard did not receive any more guild packets within 15 seconds.");
+      this._debug(
+        "Shard did not receive any more guild packets within 15 seconds."
+      );
       this.emit(ShardEvent.FullReady, this.expectingGuilds);
       delete this._readyTimeout;
     }, 15e3);
@@ -369,7 +403,9 @@ export class Shard extends Emitter {
    */
   private _open(): void {
     this.status = Status.Nearly;
-    this._debug(`Connected. ${this._ws?.url} in ${Date.now() - this.connectedAt}`);
+    this._debug(
+      `Connected. ${this._ws?.url} in ${Date.now() - this.connectedAt}`
+    );
 
     if (this._queue.length) {
       this._debug(`${this._queue.length} packets waiting... sending all now.`);
@@ -398,7 +434,11 @@ export class Shard extends Emitter {
    * @private
    */
   private _close(event: WebSocket.CloseEvent): void {
-    this._debug(`[close] code: ${event.code}, clean?: ${event.wasClean ? "yes" : "no"}, reason: ${event.reason ?? "unknown"}`);
+    this._debug(
+      `[close] code: ${event.code}, clean?: ${
+        event.wasClean ? "yes" : "no"
+      }, reason: ${event.reason ?? "unknown"}`
+    );
 
     if (this._seq !== -1) this._closingSeq = this._seq;
     this._seq = -1;

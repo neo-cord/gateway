@@ -25,7 +25,7 @@ export class Zlib extends Compression {
    * Temporary storage of compressed chunks while zlib is flushing.
    * @private
    */
-  private _incomingChunks: Buffer[] = []
+  private _incomingChunks: Buffer[] = [];
 
   /**
    * Whether or not zlib is currently flushing or not.
@@ -43,7 +43,7 @@ export class Zlib extends Compression {
       return;
     } else if (Array.isArray(data)) {
       this.emit("debug", "Received fragmented buffer message.");
-      data.forEach(buf => this._addBuffer(buf));
+      data.forEach((buf) => this._addBuffer(buf));
       return;
     } else if (data instanceof ArrayBuffer) {
       this.emit("debug", "Received array buffer message.");
@@ -51,7 +51,10 @@ export class Zlib extends Compression {
       return;
     }
 
-    this.emit("error", new CustomError("ProcessingError", "Received invalid data."));
+    this.emit(
+      "error",
+      new CustomError("ProcessingError", "Received invalid data.")
+    );
   }
 
   /**
@@ -63,19 +66,17 @@ export class Zlib extends Compression {
 
     this._zlib = createUnzip({
       flush: constants.Z_SYNC_FLUSH,
-      chunkSize: 128 * 1024
+      chunkSize: 128 * 1024,
     })
-      .on("data", c => this._chunks.push(c))
-      .on("error", e => this.emit("error", e));
+      .on("data", (c) => this._chunks.push(c))
+      .on("error", (e) => this.emit("error", e));
   }
 
   /**
    * @private
    */
   private _addBuffer(buf: Buffer): void {
-    this._flushing
-      ? this._incomingChunks.push(buf)
-      : this._write(buf);
+    this._flushing ? this._incomingChunks.push(buf) : this._write(buf);
   }
 
   /**
@@ -108,7 +109,7 @@ export class Zlib extends Compression {
     this._zlib.write(buf);
 
     const l = buf.length;
-    if (l >= 4 && buf.readUInt32BE(l - 4) === 0xFFFF) {
+    if (l >= 4 && buf.readUInt32BE(l - 4) === 0xffff) {
       this._flushing = true;
       this._zlib.flush(constants.Z_SYNC_FLUSH, this._flush);
       return true;

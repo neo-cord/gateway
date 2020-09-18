@@ -21,18 +21,19 @@ export enum GatewayIntent {
   GuildMessageTyping = 1 << 11,
   DirectMessages = 1 << 12,
   DirectMessageReactions = 1 << 13,
-  DirectMessageTyping = 1 << 14
+  DirectMessageTyping = 1 << 14,
 }
 
 export class Intents extends BitField<IntentResolvable> {
   /**
    * All intents that were provided by discord.
    */
-  public static FLAGS = GatewayIntent
+  public static FLAGS = GatewayIntent;
   /**
    * All privileged intents ORed together.
    */
-  public static PRIVILEGED = GatewayIntent.GuildMembers | GatewayIntent.GuildPresences;
+  public static PRIVILEGED =
+    GatewayIntent.GuildMembers | GatewayIntent.GuildPresences;
 
   /**
    * All of the non-privileged intents.
@@ -42,17 +43,19 @@ export class Intents extends BitField<IntentResolvable> {
   /**
    * Recommended defaults by NeoCord.
    */
-  public static DEFAULT = GatewayIntent.Guilds
-    | GatewayIntent.GuildMessages
-    | GatewayIntent.GuildBans
-    | GatewayIntent.GuildEmojis
-    | GatewayIntent.GuildInvites
-    | GatewayIntent.GuildVoiceStates
-    | GatewayIntent.DirectMessages
+  public static DEFAULT =
+    GatewayIntent.Guilds |
+    GatewayIntent.GuildMessages |
+    GatewayIntent.GuildBans |
+    GatewayIntent.GuildEmojis |
+    GatewayIntent.GuildInvites |
+    GatewayIntent.GuildVoiceStates |
+    GatewayIntent.DirectMessages;
 }
 
-export type IntentResolvable = GatewayIntent
+export type IntentResolvable =
+  | GatewayIntent
   | keyof typeof GatewayIntent
   | number
   | BitFieldObject
-  | ((keyof typeof GatewayIntent) | number | BitFieldObject)[];
+  | (keyof typeof GatewayIntent | number | BitFieldObject)[];

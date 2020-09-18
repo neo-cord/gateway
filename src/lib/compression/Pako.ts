@@ -37,18 +37,22 @@ export class Pako extends ZlibSync {
    * Adds a buffer to the inflate.
    * @private
    */
-  // @ts-expect-error
-  private _addBuffer(buf: Buffer): void {
+  protected _addBuffer(buf: Buffer): void {
     const l = buf.length;
-    if (l >= 4 && buf.readUInt32BE(l - 4) === 0xFFFF) {
+    if (l >= 4 && buf.readUInt32BE(l - 4) === 0xffff) {
       this._zlib.push(buf, 2);
       if (this._zlib.err) {
-        this.emit("error", new CustomError("CompressionError", `${this._zlib.err}: ${this._zlib.msg}`));
+        this.emit(
+          "error",
+          new CustomError(
+            "CompressionError",
+            `${this._zlib.err}: ${this._zlib.msg}`
+          )
+        );
         return;
       }
 
-      if (this._zlib.result)
-        this.emit("data", Buffer.from(this._zlib.result));
+      if (this._zlib.result) this.emit("data", Buffer.from(this._zlib.result));
 
       return;
     }

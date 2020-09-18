@@ -27,7 +27,11 @@ export class Json extends Serialization {
    */
   public decode(raw: RawData): Payload {
     try {
-      if (typeof raw === "string" || raw instanceof Buffer || raw instanceof ArrayBuffer) {
+      if (
+        typeof raw === "string" ||
+        raw instanceof Buffer ||
+        raw instanceof ArrayBuffer
+      ) {
         return JSON.parse(raw.toString());
       }
 

@@ -18,7 +18,7 @@ export enum GatewayOpCode {
   RequestGuildMembers,
   InvalidSession,
   Hello,
-  HeartbeatAck
+  HeartbeatAck,
 }
 
 export enum GatewayEvent {
@@ -57,7 +57,7 @@ export enum GatewayEvent {
   TypingStart = "TYPING_START",
   VoiceStateUpdate = "VOICE_STATE_UPDATE",
   VoiceServerUpdate = "VOICE_SERVER_UPDATE",
-  WebhooksUpdate = "WEBHOOKS_UPDATE"
+  WebhooksUpdate = "WEBHOOKS_UPDATE",
 }
 
 export enum GatewayCloseCode {
@@ -74,7 +74,7 @@ export enum GatewayCloseCode {
   ShardingRequired,
   InvalidAPIVersion,
   InvalidIntents,
-  DisallowedIntents
+  DisallowedIntents,
 }
 
 export enum Status {
@@ -87,7 +87,7 @@ export enum Status {
   Nearly,
   Disconnected,
   Connecting,
-  WaitingForGuilds
+  WaitingForGuilds,
 }
 
 export enum ShardEvent {
@@ -97,7 +97,7 @@ export enum ShardEvent {
   Resumed = "resumed",
   InvalidSession = "invalidSession",
   Destroyed = "destroyed",
-  FullReady = "fullReady"
+  FullReady = "fullReady",
 }
 
 export enum ISMEvent {
@@ -108,7 +108,7 @@ export enum ISMEvent {
   ShardDisconnect = "shardDisconnected",
   ShardReconnecting = "shardReconnecting",
   Invalidated = "invalidated",
-  Debug = "debug"
+  Debug = "debug",
 }
 
 export interface Payload<D = unknown> {
@@ -130,8 +130,8 @@ export const DEFAULTS: ISMOptions = {
   properties: {
     $browser: "NeoCord",
     $device: "NeoCord",
-    $os: process.platform
+    $os: process.platform,
   },
   url: "auto",
-  version: 6
+  version: 6,
 };

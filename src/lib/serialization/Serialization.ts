@@ -16,12 +16,15 @@ export abstract class Serialization {
         try {
           require("erlpack");
         } catch {
-          throw new CustomError("SerializationError", "Module 'erlpack' not found.");
+          throw new CustomError(
+            "SerializationError",
+            "Module 'erlpack' not found."
+          );
         }
 
-        return new (require("./Erlpack")).Erlpack();
+        return new (require("./Erlpack").Erlpack)();
       case "json":
-        return new (require("./Json")).Json();
+        return new (require("./Json").Json)();
       default:
         throw new TypeError(`Invalid serialization type: ${type}`);
     }

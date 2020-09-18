@@ -59,7 +59,9 @@ export class Session {
   public waitForHello(): void {
     this._debug("Setting the hello timeout for 30s");
     this._helloTimeout = Timers.setTimeout(() => {
-      this._debug("Did not receive HELLO op in time. Destroying and reconnecting.");
+      this._debug(
+        "Did not receive HELLO op in time. Destroying and reconnecting."
+      );
       this.shard.destroy({ reset: true, code: 4000 });
     }, 3e5);
   }
@@ -80,9 +82,7 @@ export class Session {
    * Resumes or created a new session.
    */
   public identify(): void {
-    return this.id
-      ? this.resume()
-      : this.new();
+    return this.id ? this.resume() : this.new();
   }
 
   /**
@@ -97,7 +97,7 @@ export class Session {
     const d = {
       token: this.manager.token,
       properties: this.manager.options.properties,
-      shard: [ this.shard.id, Number(this.manager.options.shardCount) ],
+      shard: [this.shard.id, Number(this.manager.options.shardCount)],
       intents: this.manager.options.intents,
     };
 
@@ -119,10 +119,12 @@ export class Session {
     const d = {
       token: this.manager.token,
       sequence: this.shard.closingSequence,
-      session_id: this.id
+      session_id: this.id,
     };
 
-    this._debug(`Resuming ${this.id}; Sequence = ${this.shard.closingSequence}`);
+    this._debug(
+      `Resuming ${this.id}; Sequence = ${this.shard.closingSequence}`
+    );
     this.shard.send({ op: GatewayOpCode.Resume, d }, true);
   }
 
@@ -130,6 +132,8 @@ export class Session {
    * @private
    */
   private _debug(message: string): number {
-    return this.manager.emit(`(Shard ${this.shard}) Session: ${message.trim()}`);
+    return this.manager.emit(
+      `(Shard ${this.shard}) Session: ${message.trim()}`
+    );
   }
 }
