@@ -18,7 +18,8 @@
     "build": "rm -rf dist && tsc --removeComments",
     "build:types": "tsc -d",
     "lint": "eslint . --ext .ts",
-    "bundle:types": "dts-bundle --name @neocord/gateway --main ./dist --removeSource --outputAsModuleFolder --baseDir ./dist --out ../typings/index.d.ts"
+    "bundle:types": "dts-bundle --name @neocord/gateway --main ./dist --removeSource --outputAsModuleFolder --baseDir ./dist --out ../typings/index.d.ts",
+    "format": "prettier --write src/"
   },
   "bugs": {
     "url": "https://github.com/neo-cord/gateway/issues"
@@ -37,6 +38,7 @@
     "erlpack": "^0.1.3",
     "eslint": "^7.9.0",
     "pako": "^1.0.11",
+    "prettier": "^2.1.2",
     "typescript": "^4.0.2",
     "zlib-sync": "^0.1.7"
   }
