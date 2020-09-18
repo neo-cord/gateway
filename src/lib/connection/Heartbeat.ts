@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { GatewayOpCode } from "../../constants";
+import { GatewayOpCode, Status } from "../../constants";
 import { define, Timers } from "@neocord/utils";
 
 import type { Shard } from "../Shard";
@@ -86,9 +86,18 @@ export class Heartbeat {
 
   /**
    * Sends a heartbeat to the gateway.
-   * @param reason The heartbeat reason.
+   * @param {string} reason The heartbeat reason.
+   * @param {boolean} [ignore] The shard statuses to ignore.
    */
-  public new(reason: string): void {
+  public new(reason: string, ignore: boolean = [ Status.WaitingForGuilds, Status.Identifying, Status.Resuming ].includes(this.shard.status)): void {
+    if (ignore && !this.acked) {
+      this._debug("Didn't process last heartbeat ack yet but we are still connected. Sending one now...");
+    } else if (!this.acked) {
+      this._debug("Didn't receive a heartbeat last time. Assuming zombie connection, destroying and reconnecting.");
+      this._debug(`Zombie Connection: Stats = ${Status[this.shard.status]}, Sequence = ${this.shard.sequence}`);
+      return this.shard.destroy({ code: 4009, reset: true });
+    }
+
     this._debug(`‹${reason}› Sending a heartbeat to the gateway.`);
     this.shard.send({ op: GatewayOpCode.Heartbeat, d: this.shard.sequence });
     this.acked = false;

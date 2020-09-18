@@ -326,7 +326,7 @@ export class Shard extends Emitter {
         this.emit(ShardEvent.InvalidSession);
         break;
       case GatewayOpCode.Heartbeat:
-        this.heartbeat.new("request");
+        this.heartbeat.new("requested", true);
         break;
       case GatewayOpCode.HeartbeatAck:
         this.heartbeat.ack();

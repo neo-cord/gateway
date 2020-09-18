@@ -547,9 +547,10 @@ export class Heartbeat {
 
   /**
    * Sends a heartbeat to the gateway.
-   * @param reason The heartbeat reason.
+   * @param {string} reason The heartbeat reason.
+   * @param {boolean} [ignore] The shard statuses to ignore.
    */
-  new(reason: string): void;
+  new(reason: string, ignore?: boolean): void;
 }
 
 /**
@@ -608,3 +609,4 @@ export abstract class Serialization {
 
 export type SerializationType = "json" | "etf";
 export type RawData = string | Buffer | Buffer[] | ArrayBuffer;
+
