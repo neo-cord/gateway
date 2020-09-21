@@ -43,10 +43,10 @@
   version "1.0.4"
   resolved "https://codeload.github.com/neo-cord/eslint-config/tar.gz/72d466cd621362dadbd5b7da4563d7b49dd11160"
 
-"@neocord/utils@^1.0.13":
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.13.tgz#2c18c60b8dcc8f10b6d2d4d3d3f6fc673663481d"
-  integrity sha512-URflGopnaid8pvZ/PkS3S/TGpOLMtUgmQK5nPlmMgTd6NDubaUwYMIzzIa734vXmjr3/ILh67Lrdm61A7Q3ucg==
+"@neocord/utils@^1.0.15":
+  version "1.0.15"
+  resolved "https://registry.yarnpkg.com/@neocord/utils/-/utils-1.0.15.tgz#c15b47a8a054fdda9c7643456e70b482d97bf66d"
+  integrity sha512-YSEOcYNwDV+y2RCvQ9uNzF+0PySuiSYrmS80HZEob+ET4oaGvDslrhFT3Zq1EcIjRT/oSY0elDknxf+GSy55gA==
   dependencies:
     tslib "^2.0.1"
 
