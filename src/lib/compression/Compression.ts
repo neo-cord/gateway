@@ -11,30 +11,24 @@ import { EventEmitter } from "events";
  * Used for decompressing data sent by the discord gateway.
  */
 export abstract class Compression extends EventEmitter {
-  /**
-   * Creates a new Compression instance.
-   */
   protected constructor() {
     super();
+
     this.init();
   }
 
   /**
    * Emitted when decompressed data is available.
-   * @param event
-   * @param listener
    */
   public on(event: "data", listener: (data: Buffer) => void): this;
+
   /**
    * Emitted when the compression handler runs into an error.
-   * @param event
-   * @param listener
    */
   public on(event: "error", listener: (data: Error) => void): this;
+
   /**
    * Used for debugging the compression handler.
-   * @param event
-   * @param listener
    */
   public on(event: "debug", listener: (message: string) => void): this;
   public on(event: string, listener: (...args: any[]) => void): this {
@@ -43,7 +37,7 @@ export abstract class Compression extends EventEmitter {
 
   /**
    * Returns a new compression instance.
-   * @param type The type of compression to use, only "zlib" and "zlib-sync" are supported.
+   * @param {CompressionType} type The type of compression to use, only "zlib" and "zlib-sync" are supported.
    */
   public static create(type: CompressionType): Compression {
     switch (type) {
@@ -77,7 +71,7 @@ export abstract class Compression extends EventEmitter {
 
   /**
    * Adds compressed data to the compression handler.
-   * @param data
+   * @param {Compressible} data
    */
   public abstract add(data: Compressible): void;
 

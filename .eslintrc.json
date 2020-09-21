@@ -1,44 +1,6 @@
 {
-  "env": {
-    "es2020": true,
-    "node": true
-  },
-  "extends": [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
-  ],
-  "parser": "@typescript-eslint/parser",
+  "extends": "@neocord",
   "parserOptions": {
-    "ecmaVersion": 2020,
-    "sourceType": "module",
-    "project": "tsconfig.json"
-  },
-  "root": true,
-  "plugins": [
-    "@typescript-eslint"
-  ],
-  "rules": {
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1
-      }
-    ],
-    "linebreak-style": [
-      "error",
-      "unix"
-    ],
-    "quotes": [
-      "error",
-      "double"
-    ],
-    "semi": [
-      "error",
-      "always"
-    ],
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-var-requires": "off",
-    "@typescript-eslint/ban-ts-comment": "off"
+    "project": "./tsconfig.json"
   }
 }

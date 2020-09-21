@@ -19,6 +19,7 @@ try {
 export class Pako extends ZlibSync {
   /**
    * The pako inflate instance.
+   * @type {Inflate}
    * @private
    */
   // @ts-expect-error
@@ -35,6 +36,7 @@ export class Pako extends ZlibSync {
 
   /**
    * Adds a buffer to the inflate.
+   * @param {Buffer} buf
    * @private
    */
   protected _addBuffer(buf: Buffer): void {

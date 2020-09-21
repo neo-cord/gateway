@@ -1,17 +1,16 @@
 {
   "compilerOptions": {
     /* Basic */
-    "lib": [
-      "ES2020"
-    ],
-    "target": "ES2020",
-    "module": "CommonJS",
+    "lib": ["es2019"],
+    "target": "es2019",
+    "module": "commonjs",
     "skipLibCheck": true,
 
     /* Compiling */
     "inlineSourceMap": false,
     "declaration": false,
     "allowJs": true,
+    "importHelpers": true,
     "baseUrl": "./src",
     "rootDir": "./src",
     "outDir": "./dist",
@@ -32,20 +31,13 @@
     "importsNotUsedAsValues": "error",
 
     /* Types */
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "forceConsistentCasingInFileNames": true,
 
     /* Module Resolution */
     "resolveJsonModule": true,
     "esModuleInterop": true
   },
-  "include": [
-    "./src/**/*",
-    "./typings/index.d.ts"
-  ],
-  "exclude": [
-    "./node_modules"
-  ]
+  "include": ["./src/**/*"],
+  "exclude": ["./node_modules"]
 }
