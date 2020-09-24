@@ -16,7 +16,7 @@ export enum GatewayIntent {
   GuildInvites = 1 << 6,
   GuildVoiceStates = 1 << 7,
   GuildPresences = 1 << 8,
-  GuildMessages = 1 << 8,
+  GuildMessages = 1 << 9,
   GuildMessageReactions = 1 << 10,
   GuildMessageTyping = 1 << 11,
   DirectMessages = 1 << 12,
