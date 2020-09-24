@@ -8,6 +8,7 @@ import {
   Collection,
   define,
   Emitter,
+  Listener,
   mergeObjects,
   sleep,
 } from "@neocord/utils";
@@ -16,8 +17,9 @@ import {
   API,
   DEFAULTS,
   GatewayCloseCode,
-  ISMEvent,
+  Payload,
   ShardEvent,
+  SMEvent,
   USER_AGENT,
 } from "../constants";
 import { Shard } from "./Shard";
@@ -26,7 +28,7 @@ import type { CompressionType } from "./compression";
 import type WebSocket from "ws";
 
 const unrecoverable = Object.values(GatewayCloseCode).slice(1);
-const un_resumable = [1000, 4006, GatewayCloseCode.InvalidSeq];
+const unresumable = [1000, 4006, GatewayCloseCode.InvalidSeq];
 
 /**
  * Handles internalized bot sharding.
@@ -55,7 +57,7 @@ export class ShardManager extends Emitter {
   /**
    * The options provided to this ISM instance.
    */
-  public options: Required<ISMOptions>;
+  public options: Required<ShardManagerOptions>;
 
   /**
    * Whether or not this internal sharding manager is destroyed.
@@ -94,7 +96,7 @@ export class ShardManager extends Emitter {
    * Creates a new ShardManager.
    * @param options
    */
-  public constructor(options: ISMOptions = {}) {
+  public constructor(options: ShardManagerOptions = {}) {
     options = mergeObjects(options, DEFAULTS);
     super();
 
@@ -103,7 +105,7 @@ export class ShardManager extends Emitter {
 
     this.shards = new Collection();
     this.destroyed = this.reconnecting = this.ready = false;
-    this.options = options as Required<ISMOptions>;
+    this.options = options as Required<ShardManagerOptions>;
     this.useEtf = options.useEtf ?? false;
     this.compression =
       options.compression === true ? "zlib" : options.compression ?? false;
@@ -137,6 +139,64 @@ export class ShardManager extends Emitter {
     Object.defineProperty(this, "token", {
       value: token,
     });
+  }
+
+  /**
+   * Used for debugging the shard manager.
+   */
+  public on(event: SMEvent.Debug, listener: (message: string) => void): this;
+
+  /**
+   * Emitted when this manager becomes invalidated.
+   */
+  public on(event: SMEvent.Invalidated, listener: () => void): this;
+
+  /**
+   * Emitted when a shard receives a packet from discord.
+   */
+  public on(
+    event: SMEvent.RawPacket,
+    listener: (pk: Payload, shard: Shard) => void
+  ): this;
+
+  /**
+   * Emitted when all shards become ready.
+   */
+  public on(event: SMEvent.Ready, listener: () => void): this;
+
+  /**
+   * Emitted when the shard has disconnected from the gateway.
+   */
+  public on(
+    event: SMEvent.ShardDisconnect,
+    listener: (shard: Shard, event: WebSocket.CloseEvent) => void
+  ): this;
+
+  /**
+   * Emitted when the shard encounters an error.
+   */
+  public on(
+    event: SMEvent.ShardError,
+    listener: (shard: Shard, event: any) => void
+  ): this;
+
+  /**
+   * Emitted when the shard has become ready.
+   */
+  public on(
+    event: SMEvent.ShardReady,
+    listener: (shard: Shard, guild?: Set<string>) => void
+  ): this;
+
+  /**
+   * Emitted when the shard is reconnecting.
+   */
+  public on(
+    event: SMEvent.ShardReconnecting,
+    listener: (shard: Shard) => void
+  ): this;
+  public on(event: string, listener: Listener): this {
+    return super.on(event, listener);
   }
 
   /**
@@ -251,7 +311,7 @@ export class ShardManager extends Emitter {
     if (!shard.managed) {
       shard
         .on(ShardEvent.FullReady, (guilds: Set<string>) => {
-          this.emit(ISMEvent.ShardReady, shard, guilds);
+          this.emit(SMEvent.ShardReady, shard, guilds);
           if (!this._queue.size) this.reconnecting = false;
           this._checkShards();
         })
@@ -261,7 +321,7 @@ export class ShardManager extends Emitter {
               ? this.destroyed
               : unrecoverable.includes(event.code)
           ) {
-            this.emit(ISMEvent.ShardError, shard, event);
+            this.emit(SMEvent.ShardDisconnect, shard, event);
             this._debug(
               `Close Reason: ${GatewayCloseCode[event.code]}`,
               shard.id
@@ -269,9 +329,9 @@ export class ShardManager extends Emitter {
             return;
           }
 
-          if (un_resumable.includes(event.code)) shard.session.reset();
+          if (unresumable.includes(event.code)) shard.session.reset();
 
-          this.emit(ISMEvent.ShardReconnecting, shard);
+          this.emit(SMEvent.ShardReconnecting, shard);
           this._queue.add(shard);
 
           if (shard.session.id) {
@@ -286,7 +346,7 @@ export class ShardManager extends Emitter {
           }
         })
         .on(ShardEvent.InvalidSession, () =>
-          this.emit(ISMEvent.ShardReconnecting, shard)
+          this.emit(SMEvent.ShardReconnecting, shard)
         )
         .on(ShardEvent.Destroyed, () => {
           this._debug(
@@ -294,7 +354,7 @@ export class ShardManager extends Emitter {
             shard.id
           );
 
-          this.emit(ISMEvent.ShardReconnecting, shard);
+          this.emit(SMEvent.ShardReconnecting, shard);
           this._queue.add(shard);
           this._reconnect();
         });
@@ -351,7 +411,7 @@ export class ShardManager extends Emitter {
         return this._reconnect(skipLimit);
       }
 
-      this.emit(ISMEvent.Invalidated);
+      this.emit(SMEvent.Invalidated);
       this.destroy();
     } finally {
       this.reconnecting = false;
@@ -369,7 +429,7 @@ export class ShardManager extends Emitter {
     if (this.shards.size !== this._shards) return;
 
     this.ready = true;
-    this.emit(ISMEvent.Ready);
+    this.emit(SMEvent.Ready);
   }
 
   /**
@@ -377,7 +437,7 @@ export class ShardManager extends Emitter {
    */
   private _debug(message: string, shard?: number) {
     this.emit(
-      ISMEvent.Debug,
+      SMEvent.Debug,
       `(${shard ? `Shard ${shard}` : "Manager"}) ${message.trim()}`
     );
   }
@@ -411,7 +471,7 @@ export class ShardManager extends Emitter {
   }
 }
 
-export interface ISMOptions {
+export interface ShardManagerOptions {
   shards?: number | number[] | "auto";
   shardCount?: number | null;
 
