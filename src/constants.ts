@@ -4,7 +4,7 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import type { ISMOptions } from "./lib/Manager";
+import type { ShardManagerOptions } from "./lib/Manager";
 import { Intents } from "./lib/Intents";
 
 export enum GatewayOpCode {
@@ -100,7 +100,7 @@ export enum ShardEvent {
   FullReady = "fullReady",
 }
 
-export enum ISMEvent {
+export enum SMEvent {
   Ready = "ready",
   ShardError = "shardError",
   ShardReady = "shardReady",
@@ -122,7 +122,7 @@ export const API = "https://discord.com/api/v8";
 
 export const USER_AGENT = "NeoCord (v1 https://github.com/neo-cord)";
 
-export const DEFAULTS: ISMOptions = {
+export const DEFAULTS: ShardManagerOptions = {
   useEtf: false,
   compression: false,
   intents: Intents.DEFAULT,
