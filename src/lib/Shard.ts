@@ -10,7 +10,7 @@ import { URLSearchParams } from "url";
 import {
   GatewayEvent,
   GatewayOpCode,
-  ISMEvent,
+  SMEvent,
   Payload,
   ShardEvent,
   Status,
@@ -228,7 +228,7 @@ export class Shard extends Emitter {
     } else if (options.emit) this.emit(ShardEvent.Destroyed);
 
     // (2) Reset some shit.
-    delete this._ws;
+    this._ws = undefined;
     this.status = Status.Disconnected;
 
     if (this._seq !== -1) this._closingSeq = this._seq;
@@ -300,7 +300,7 @@ export class Shard extends Emitter {
     let pk!: Payload<Dictionary>;
     try {
       pk = this._serialization.decode(data) as Payload<Dictionary>;
-      this.manager.emit(ISMEvent.RawPacket, pk, this);
+      this.manager.emit(SMEvent.RawPacket, pk, this);
     } catch (e) {
       this.emit(ShardEvent.Error, e);
       return;
@@ -425,7 +425,7 @@ export class Shard extends Emitter {
    */
   private _error(event: WebSocket.ErrorEvent): void {
     const error = event && event.error ? event.error : event;
-    if (error) this.manager.emit(ISMEvent.ShardError, error, this.id);
+    if (error) this.manager.emit(SMEvent.ShardError, this, error);
     return;
   }
 
