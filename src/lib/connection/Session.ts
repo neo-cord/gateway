@@ -49,7 +49,7 @@ export class Session {
     delete this.id;
     if (this._helloTimeout) {
       Timers.clearTimeout(this._helloTimeout);
-      delete this._helloTimeout;
+      this._helloTimeout = undefined;
     }
   }
 
