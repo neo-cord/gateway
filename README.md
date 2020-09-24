@@ -14,9 +14,9 @@ yarn add @neocord/gateway
 <h2 align="center">Basic Usage</h2>
 
 ```ts
-import { InternalShardingManager, Intents } from "@neocord/gateway";
+import { ShardManager, Intents } from "@neocord/gateway";
 
-const manager = new InternalShardingManager({
+const manager = new ShardManager({
   shards: "auto", // Creates the amount of recommended shards according to discord.
   compression: "zlib-sync", // see "1".
   useEtf: true, // enables etf encoding, requires the erlpack module
