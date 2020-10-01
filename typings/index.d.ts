@@ -4,7 +4,7 @@
 //   ../ws
 //   ../events
 
-import type { BitField, BitFieldObject, Collection, Emitter } from "@neocord/utils";
+import type { BitField, BitFieldObject, Collection, Emitter, Listener } from "@neocord/utils";
 import type { EventEmitter } from "events";
 
 export class CustomError {
@@ -191,6 +191,7 @@ export class ShardManager extends Emitter {
    * Emitted when the shard is reconnecting.
    */
   on(event: SMEvent.ShardReconnecting, listener: (shard: Shard) => void): this;
+  on(event: string, listener: Listener): this;
 
   /**
    * Destroys this manager.
