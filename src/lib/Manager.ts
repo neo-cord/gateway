@@ -138,6 +138,7 @@ export class ShardManager extends Emitter {
   public set token(token: string) {
     Object.defineProperty(this, "token", {
       value: token,
+      writable: true
     });
   }
 
