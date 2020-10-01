@@ -1,6 +1,6 @@
 {
   "name": "@neocord/gateway",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "Connects to the discord gateway.",
   "author": "MeLike2D",
   "homepage": "https://github.com/neo-cord/gateway#readme",
