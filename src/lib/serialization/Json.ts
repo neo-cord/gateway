@@ -7,7 +7,7 @@
 import { RawData, Serialization } from "./Serialization";
 import { CustomError } from "../../errors/CustomError";
 
-import type { Payload } from "../../constants";
+import type { Payload } from "../../util/constants";
 
 /**
  * Serialization handler for the JSON format. Uses the builtin JSON.parse and stringify methods.
@@ -15,7 +15,8 @@ import type { Payload } from "../../constants";
 export class Json extends Serialization {
   /**
    * Encodes a payload into a json string.
-   * @param payload The payload to encode.
+   * @param {Payload} payload The payload to encode.
+   * @returns {string}
    */
   public encode(payload: Payload): string {
     return JSON.stringify(payload);
@@ -23,7 +24,8 @@ export class Json extends Serialization {
 
   /**
    * Decodes a decompressed websocket packet.
-   * @param raw The decompressed websocket packet.
+   * @param {RawData} raw The decompressed websocket packet.
+   * @returns {Payload}
    */
   public decode(raw: RawData): Payload {
     try {
@@ -39,7 +41,7 @@ export class Json extends Serialization {
         return JSON.parse(Buffer.concat(raw).toString());
       }
 
-      throw "Received invalid data.";
+      throw new Error("Received invalid data.");
     } catch (e) {
       throw new CustomError("SerializationError", e.message);
     }

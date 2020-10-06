@@ -3,7 +3,7 @@
  */
 import { CustomError } from "../../errors/CustomError";
 
-import type { Payload } from "../../constants";
+import type { Payload } from "../../util/constants";
 
 export abstract class Serialization {
   /**
@@ -14,15 +14,15 @@ export abstract class Serialization {
     switch (type) {
       case "etf":
         try {
-          require("erlpack");
+          require("etf.js");
         } catch {
           throw new CustomError(
             "SerializationError",
-            "Module 'erlpack' not found."
+            "Module 'etf.js' not found."
           );
         }
 
-        return new (require("./Erlpack").Erlpack)();
+        return new (require("./Erlpack").EtfJS)();
       case "json":
         return new (require("./Json").Json)();
       default:
@@ -34,7 +34,7 @@ export abstract class Serialization {
    * Serializes a payload for use with WebSocket#send
    * @param payload The gateway payload that will be encoded.
    */
-  public abstract encode(payload: Payload): Buffer | string;
+  public abstract encode(payload: Payload): Buffer | Uint8Array | string;
 
   /**
    * Deserializes a WebSocket packet to a JSON Payload.
