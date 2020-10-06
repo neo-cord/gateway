@@ -2,9 +2,13 @@
 // Dependencies for this module:
 //   ../@neocord/utils
 //   ../ws
+//   ../zlib-sync
+//   ../zlib
 //   ../events
 
-import type { BitField, BitFieldObject, Collection, Emitter, Listener } from "@neocord/utils";
+import type { Collection, Emitter } from "@neocord/utils";
+import type { Inflate } from "zlib-sync";
+import type { Unzip } from "zlib";
 import type { EventEmitter } from "events";
 
 export class CustomError {
@@ -17,74 +21,87 @@ export class CustomError {
 
 export class Shard extends Emitter {
   /**
-   * The internal sharding manager.
-   */
-  readonly manager: ShardManager;
-  /**
    * The ID of this shard.
+   * @type {number}
    */
   readonly id: number;
   /**
-   * This shard's heartbeat handler..
+   * This shard's heartbeat handler.
+   * @type {Heartbeat}
    */
   readonly heartbeat: Heartbeat;
   /**
    * This shard's session handler.
+   * @type {Session}
    */
   readonly session: Session;
   /**
-   * The status of this shard..
+   * The status of this shard.
+   * @type {Status}
    */
   status: Status;
   /**
    * When this shard connected to the gateway.
+   * @type {number}
    */
   connectedAt: number;
   /**
    * Whether or not this shard is managed by the internal sharding manager.
+   * @type {boolean}
    */
   managed: boolean;
   /**
    * Guilds that are expected to be received.
+   * @type {?Set<string>}
    */
   expectingGuilds?: Set<string>;
 
   /**
-   * Creates a new InternalShard instance.
-   * @param manager The ISM instance.
-   * @param id The ID of this shard.
+   * @param {ShardManager} manager The ISM instance.
+   * @param {number} id The ID of this shard.
    */
   constructor(manager: ShardManager, id: number);
 
   /**
+   * The shard manager.
+   * @type {ShardManager}
+   */
+  get manager(): ShardManager;
+
+  /**
    * The current sequence.
+   * @type {number}
    */
   get sequence(): number;
 
   /**
    * The sequence when the socket closed.
+   * @type {number}
    */
   get closingSequence(): number;
 
   /**
    * The latency of this shard.
+   * @type {number}
    */
   get latency(): number;
 
   /**
    * Whether or not this shard is connected.
+   * @type {boolean}
    */
   get connected(): boolean;
 
   /**
    * Send a new payload to the gateway.
-   * @param data The payload to send.
-   * @param prioritized Whether or not to prioritize this payload.
+   * @param {Payload} data The payload to send.
+   * @param {boolean} [prioritized] Whether or not to prioritize this payload.
    */
   send(data: Payload, prioritized?: boolean): void;
 
   /**
    * Destroys the websocket connection.
+   * @param {DestroyOptions} options
    */
   destroy(options?: DestroyOptions): void;
 
@@ -191,7 +208,6 @@ export class ShardManager extends Emitter {
    * Emitted when the shard is reconnecting.
    */
   on(event: SMEvent.ShardReconnecting, listener: (shard: Shard) => void): this;
-  on(event: string, listener: Listener): this;
 
   /**
    * Destroys this manager.
@@ -248,50 +264,6 @@ export interface SessionStartLimit {
   remaining: number;
   reset_after: number;
 }
-
-export enum GatewayIntent {
-  Guilds = 1,
-  GuildMembers = 2,
-  GuildBans = 4,
-  GuildEmojis = 8,
-  GuildIntegrations = 16,
-  GuildWebhooks = 32,
-  GuildInvites = 64,
-  GuildVoiceStates = 128,
-  GuildPresences = 256,
-  GuildMessages = 512,
-  GuildMessageReactions = 1024,
-  GuildMessageTyping = 2048,
-  DirectMessages = 4096,
-  DirectMessageReactions = 8192,
-  DirectMessageTyping = 16384
-}
-
-export class Intents extends BitField<IntentResolvable> {
-  /**
-   * All intents that were provided by discord.
-   */
-  static FLAGS: typeof GatewayIntent;
-  /**
-   * All privileged intents ORed together.
-   */
-  static PRIVILEGED: number;
-  /**
-   * All of the non-privileged intents.
-   */
-  static NON_PRIVILEGED: number;
-  /**
-   * Recommended defaults by NeoCord.
-   */
-  static DEFAULT: number;
-}
-
-export type IntentResolvable =
-  GatewayIntent
-  | keyof typeof GatewayIntent
-  | number
-  | BitFieldObject
-  | (keyof typeof GatewayIntent | number | BitFieldObject)[];
 
 export enum GatewayOpCode {
   Dispatch = 0,
@@ -410,8 +382,15 @@ export const DEFAULTS: ShardManagerOptions;
 
 export class ZlibSync extends Compression {
   /**
+   * The zlib inflate instance.
+   * @type {Zlib.Inflate}
+   * @private
+   */
+  protected _zlib: Inflate;
+
+  /**
    * Adds data to the zlib inflate.
-   * @param data
+   * @param {Compressible} data The data to compress.
    */
   add(data: Compressible): void;
 
@@ -424,8 +403,15 @@ export class ZlibSync extends Compression {
 
 export class Zlib extends Compression {
   /**
+   * The unzip instance.
+   * @type {Unzip}
+   * @private
+   */
+  protected _zlib: Unzip;
+
+  /**
    * Adds data to the zlib unzip.
-   * @param data
+   * @param {Compressible} data The data to compress.
    */
   add(data: Compressible): void;
 
@@ -445,6 +431,7 @@ export abstract class Compression extends EventEmitter {
   /**
    * Returns a new compression instance.
    * @param {CompressionType} type The type of compression to use, only "zlib" and "zlib-sync" are supported.
+   * @returns {Compression}
    */
   static create(type: CompressionType): Compression;
 
@@ -465,7 +452,7 @@ export abstract class Compression extends EventEmitter {
 
   /**
    * Adds compressed data to the compression handler.
-   * @param {Compressible} data
+   * @param {Compressible} data The data to compress.
    */
   abstract add(data: Compressible): void;
 
@@ -481,16 +468,13 @@ export type Compressible = string | ArrayBuffer | Buffer | Buffer[];
 
 export class Session {
   /**
-   * The shard that this session is for.
-   */
-  readonly shard: Shard;
-  /**
    * The id of this session.
+   * @type {string}
    */
   id?: string;
 
   /**
-   * @param shard
+   * @param {Shard} shard The shard.
    */
   constructor(shard: Shard);
 
@@ -530,33 +514,30 @@ export class Session {
   resume(): void;
 }
 
-/**
- * Handles a shards heartbeat.
- */
 export class Heartbeat {
   /**
    * Whether or not our last heartbeat was acknowledged.
+   * @type {boolean}
    */
   acked: boolean;
   /**
    * When we last sent a heartbeat.
+   * @type {number}
    */
   last: number;
   /**
    * The heartbeat interval.
+   * @type {number}
    */
   interval?: number;
   /**
-   * The shard this heartbeat belongs to.
-   */
-  shard: Shard;
-  /**
    * The heartbeat latency.
+   * @type {number}
    */
   latency: number;
 
   /**
-   * @param shard
+   * @param {Shard} shard The shard.
    */
   constructor(shard: Shard);
 
@@ -590,30 +571,31 @@ export class Heartbeat {
 export class Json extends Serialization {
   /**
    * Encodes a payload into a json string.
-   * @param payload The payload to encode.
+   * @param {Payload} payload The payload to encode.
+   * @returns {string}
    */
   encode(payload: Payload): string;
 
   /**
    * Decodes a decompressed websocket packet.
-   * @param raw The decompressed websocket packet.
+   * @param {RawData} raw The decompressed websocket packet.
+   * @returns {Payload}
    */
   decode(raw: RawData): Payload;
 }
 
-/**
- * Serialization handler for the ETF format.
- */
-export class Erlpack extends Serialization {
+export class EtfJS extends Serialization {
   /**
    * Encodes a payload into the etf format.
-   * @param payload The payload to encode.
+   * @param {Payload} payload The payload to encode.
+   * @returns {Uint8Array}
    */
-  encode(payload: Payload): Buffer;
+  encode(payload: Payload): Uint8Array;
 
   /**
    * Decodes a decompressed websocket packet into a json payload.
-   * @param raw Decompressed websocket packet.
+   * @param {RawData} raw Decompressed websocket packet.
+   * @returns {Payload}
    */
   decode(raw: RawData): Payload;
 }
@@ -629,7 +611,7 @@ export abstract class Serialization {
    * Serializes a payload for use with WebSocket#send
    * @param payload The gateway payload that will be encoded.
    */
-  abstract encode(payload: Payload): Buffer | string;
+  abstract encode(payload: Payload): Buffer | Uint8Array | string;
 
   /**
    * Deserializes a WebSocket packet to a JSON Payload.
