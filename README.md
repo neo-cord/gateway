@@ -19,7 +19,7 @@ import { ShardManager, Intents } from "@neocord/gateway";
 const manager = new ShardManager({
   shards: "auto", // Creates the amount of recommended shards according to discord.
   compression: "zlib-sync", // see "1".
-  useEtf: true, // enables etf encoding, requires the erlpack module
+  useEtf: true, // enables erlpack encoding, requires the "etf.js" module
   intents: Intents.DEFAULTS, // Default Intents (defaults to it anyways lol)
   ...
 });
