@@ -11,6 +11,5 @@ export * from "./lib/connection";
 export * from "./lib/serialization";
 export * from "./lib/Shard";
 export * from "./lib/Manager";
-export * from "./lib/Intents";
 
-export * from "./constants";
+export * from "./util/constants";

@@ -4,8 +4,9 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import type { ShardManagerOptions } from "./lib/Manager";
-import { Intents } from "./lib/Intents";
+import { Intents } from "@neocord/utils";
+
+import type { ShardManagerOptions } from "../lib/Manager";
 
 export enum GatewayOpCode {
   Dispatch,
