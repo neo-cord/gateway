@@ -11,31 +11,35 @@ import { CustomError } from "../../errors/CustomError";
 export class Zlib extends Compression {
   /**
    * The unzip instance.
+   * @type {Unzip}
    * @private
    */
-  private _zlib!: Unzip;
+  protected _zlib!: Unzip;
 
   /**
    * Decompressed data chunks returned from zlib.
+   * @type {Buffer[]}
    * @private
    */
-  private _chunks: Buffer[] = [];
+  #chunks: Buffer[] = [];
 
   /**
    * Temporary storage of compressed chunks while zlib is flushing.
+   * @type {Buffer[]}
    * @private
    */
-  private _incomingChunks: Buffer[] = [];
+  #incomingChunks: Buffer[] = [];
 
   /**
    * Whether or not zlib is currently flushing or not.
+   * @type {boolean}
    * @private
    */
-  private _flushing = false;
+  #flushing = false;
 
   /**
    * Adds data to the zlib unzip.
-   * @param data
+   * @param {Compressible} data The data to compress.
    */
   public add(data: Compressible): void {
     if (data instanceof Buffer) {
@@ -68,15 +72,17 @@ export class Zlib extends Compression {
       flush: constants.Z_SYNC_FLUSH,
       chunkSize: 128 * 1024,
     })
-      .on("data", (c) => this._chunks.push(c))
+      .on("data", (c) => this.#chunks.push(c))
       .on("error", (e) => this.emit("error", e));
   }
 
   /**
+   * Adds a buffer to the inflate.
+   * @param {Buffer} buf The buffer.
    * @private
    */
   private _addBuffer(buf: Buffer): void {
-    this._flushing ? this._incomingChunks.push(buf) : this._write(buf);
+    this.#flushing ? this.#incomingChunks.push(buf) : this._write(buf);
   }
 
   /**
@@ -84,17 +90,17 @@ export class Zlib extends Compression {
    * @private
    */
   private _flush() {
-    this._flushing = false;
-    if (!this._chunks.length) return;
+    this.#flushing = false;
+    if (!this.#chunks.length) return;
 
-    let buf = this._chunks[0];
-    if (this._chunks.length > 1) {
-      buf = Buffer.concat(this._chunks);
+    let buf = this.#chunks[0];
+    if (this.#chunks.length > 1) {
+      buf = Buffer.concat(this.#chunks);
     }
 
-    this._chunks = [];
-    while (this._incomingChunks.length > 0) {
-      const next = this._incomingChunks.shift();
+    this.#chunks = [];
+    while (this.#incomingChunks.length > 0) {
+      const next = this.#incomingChunks.shift();
       if (next && this._write(next)) break;
     }
 
@@ -103,6 +109,7 @@ export class Zlib extends Compression {
 
   /**
    * Writes data to the zlib unzip and initiates flushing if all data has been received.
+   * @param {Buffer} buf The buffer to add.
    * @private
    */
   private _write(buf: Buffer) {
@@ -110,7 +117,7 @@ export class Zlib extends Compression {
 
     const l = buf.length;
     if (l >= 4 && buf.readUInt32BE(l - 4) === 0xffff) {
-      this._flushing = true;
+      this.#flushing = true;
       this._zlib.flush(constants.Z_SYNC_FLUSH, this._flush);
       return true;
     }

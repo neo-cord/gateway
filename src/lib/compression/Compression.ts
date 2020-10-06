@@ -38,6 +38,7 @@ export abstract class Compression extends EventEmitter {
   /**
    * Returns a new compression instance.
    * @param {CompressionType} type The type of compression to use, only "zlib" and "zlib-sync" are supported.
+   * @returns {Compression}
    */
   public static create(type: CompressionType): Compression {
     switch (type) {
@@ -71,7 +72,7 @@ export abstract class Compression extends EventEmitter {
 
   /**
    * Adds compressed data to the compression handler.
-   * @param {Compressible} data
+   * @param {Compressible} data The data to compress.
    */
   public abstract add(data: Compressible): void;
 

@@ -19,13 +19,14 @@ try {
 export class ZlibSync extends Compression {
   /**
    * The zlib inflate instance.
+   * @type {Zlib.Inflate}
    * @private
    */
-  private _zlib!: Zlib.Inflate;
+  protected _zlib!: Zlib.Inflate;
 
   /**
    * Adds data to the zlib inflate.
-   * @param data
+   * @param {Compressible} data The data to compress.
    */
   public add(data: Compressible): void {
     if (data instanceof Buffer) {
@@ -52,12 +53,16 @@ export class ZlibSync extends Compression {
    * @protected
    */
   protected init(): void {
-    this._zlib = new zlib.Inflate({ chunkSize: 128 * 1024 });
+    this._zlib = new zlib.Inflate({
+      chunkSize: 128 * 1024,
+    });
+
     return;
   }
 
   /**
    * Adds a buffer to the inflate.
+   * @param {Buffer} buf The buffer to add.
    * @private
    */
   private _addBuffer(buf: Buffer): void {
