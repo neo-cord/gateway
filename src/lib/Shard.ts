@@ -4,17 +4,17 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { Bucket, define, Emitter, Timers } from "@neocord/utils";
+import { Bucket, Emitter, Timers } from "@neocord/utils";
 import WebSocket from "ws";
 import { URLSearchParams } from "url";
 import {
   GatewayEvent,
   GatewayOpCode,
-  SMEvent,
   Payload,
   ShardEvent,
+  SMEvent,
   Status,
-} from "../constants";
+} from "../util/constants";
 import { Heartbeat, Session } from "./connection";
 import { Compression } from "./compression";
 import { RawData, Serialization } from "./serialization";
@@ -25,141 +25,156 @@ const connectionStates = Object.keys(WebSocket);
 
 export class Shard extends Emitter {
   /**
-   * The internal sharding manager.
-   */
-  public readonly manager: ShardManager;
-
-  /**
    * The ID of this shard.
+   * @type {number}
    */
   public readonly id: number;
 
   /**
-   * This shard's heartbeat handler..
+   * This shard's heartbeat handler.
+   * @type {Heartbeat}
    */
   public readonly heartbeat: Heartbeat;
 
   /**
    * This shard's session handler.
+   * @type {Session}
    */
   public readonly session: Session;
 
   /**
-   * The status of this shard..
+   * The status of this shard.
+   * @type {Status}
    */
   public status: Status;
 
   /**
    * When this shard connected to the gateway.
+   * @type {number}
    */
   public connectedAt!: number;
 
   /**
    * Whether or not this shard is managed by the internal sharding manager.
+   * @type {boolean}
    */
   public managed = false;
 
   /**
    * Guilds that are expected to be received.
+   * @type {?Set<string>}
    */
   public expectingGuilds?: Set<string>;
 
   /**
    * The serialization handler.
+   * @type {Serialization}
    * @private
    */
-  private _serialization!: Serialization;
+  #serialization!: Serialization;
 
   /**
    * The compression handler.
+   * @type {Compression}
    * @private
    */
-  private _compression?: Compression;
+  #compression?: Compression;
 
   /**
    * The rate-limit bucket.
+   * @type {Bucket}
    * @private
    */
-  private _bucket!: Bucket;
+  #bucket!: Bucket;
 
   /**
    * The websocket instance.
+   * @type {WebSocket}
    * @private
    */
-  private _ws?: WebSocket;
+  #ws?: WebSocket;
+
+  /**
+   * The shard sequence when the websocket closes.
+   * @type {number}
+   * @private
+   */
+  #closingSeq!: number;
+
+  /**
+   * The current sequence.
+   * @type {number}
+   * @private
+   */
+  #seq!: number;
+
+  /**
+   * The payloads that are waiting to be sent.
+   * @type {Payload[]}
+   * @private
+   */
+  readonly #queue!: Payload[];
 
   /**
    * The ready timeout.
+   * @type {?NodeJS.Timeout}
    * @private
    */
   private _readyTimeout?: NodeJS.Timeout;
 
   /**
-   * The shard sequence when the websocket closes.
-   * @private
+   * The internal sharding manager.
+   * @type {ShardManager}
    */
-  private _closingSeq!: number;
+  readonly #manager: ShardManager;
 
   /**
-   * The current sequence.
-   * @private
-   */
-  private _seq!: number;
-
-  /**
-   * The payloads that are waiting to be sent.
-   * @private
-   */
-  private readonly _queue!: Payload[];
-
-  /**
-   * Creates a new InternalShard instance.
-   * @param manager The ISM instance.
-   * @param id The ID of this shard.
+   * @param {ShardManager} manager The ISM instance.
+   * @param {number} id The ID of this shard.
    */
   public constructor(manager: ShardManager, id: number) {
     super();
 
-    this.manager = manager;
+    this.#manager = manager;
     this.id = id;
     this.status = Status.Idle;
 
-    const writable = [
-      "_seq",
-      "_closingSeq",
-      "_bucket",
-      "_compression",
-      "_serialization",
-      "_queue",
-      "_ws",
-    ];
-    for (const key of writable) define({ writable: true })(this, key);
-
-    this._seq = -1;
-    this._closingSeq = 0;
-    this._bucket = new Bucket(120, 60);
-    this._queue = [];
+    this.#seq = -1;
+    this.#closingSeq = 0;
+    this.#bucket = new Bucket(120, 60);
+    this.#queue = [];
 
     this.heartbeat = new Heartbeat(this);
     this.session = new Session(this);
   }
 
   /**
+   * The shard manager.
+   * @type {ShardManager}
+   */
+  public get manager(): ShardManager {
+    return this.#manager;
+  }
+
+  /**
    * The current sequence.
+   * @type {number}
    */
   public get sequence(): number {
-    return this._seq;
+    return this.#seq;
   }
 
   /**
    * The sequence when the socket closed.
+   * @type {number}
    */
   public get closingSequence(): number {
-    return this._closingSeq;
+    return this.#closingSeq;
   }
 
   /**
    * The latency of this shard.
+   * @type {number}
    */
   public get latency(): number {
     return this.heartbeat.latency;
@@ -167,31 +182,33 @@ export class Shard extends Emitter {
 
   /**
    * Whether or not this shard is connected.
+   * @type {boolean}
    */
   public get connected(): boolean {
     return (
       this.status === Status.Ready ||
-      (!!this._ws && this._ws.readyState === WebSocket.OPEN)
+      (!!this.#ws && this.#ws.readyState === WebSocket.OPEN)
     );
   }
 
   /**
    * Send a new payload to the gateway.
-   * @param data The payload to send.
-   * @param prioritized Whether or not to prioritize this payload.
+   * @param {Payload} data The payload to send.
+   * @param {boolean} [prioritized] Whether or not to prioritize this payload.
    */
   public send(data: Payload, prioritized = false): void {
     if (this.connected) {
-      const func = () => this._ws?.send(this._serialization.encode(data));
-      this._bucket.queue(func, prioritized);
+      const func = () => this.#ws?.send(this.#serialization.encode(data));
+      this.#bucket.queue(func, prioritized);
       return;
     }
 
-    this._queue[prioritized ? "unshift" : "push"](data);
+    this.#queue[prioritized ? "unshift" : "push"](data);
   }
 
   /**
    * Destroys the websocket connection.
+   * @param {DestroyOptions} options
    */
   public destroy(
     options: DestroyOptions = {
@@ -210,15 +227,15 @@ export class Shard extends Emitter {
     this.heartbeat.reset();
 
     // (1) Close the WebSocket.
-    if (this._ws) {
-      if (this._ws.readyState === WebSocket.OPEN) this._ws.close();
+    if (this.#ws) {
+      if (this.#ws.readyState === WebSocket.OPEN) this.#ws.close();
       else {
         this._debug(
-          `WebSocket State: ${connectionStates[this._ws.readyState]}`
+          `WebSocket State: ${connectionStates[this.#ws.readyState]}`
         );
 
         try {
-          this._ws.close();
+          this.#ws.close();
         } catch {
           // no-op
         }
@@ -228,13 +245,13 @@ export class Shard extends Emitter {
     } else if (options.emit) this.emit(ShardEvent.Destroyed);
 
     // (2) Reset some shit.
-    this._ws = undefined;
+    this.#ws = undefined;
     this.status = Status.Disconnected;
 
-    if (this._seq !== -1) this._closingSeq = this._seq;
+    if (this.#seq !== -1) this.#closingSeq = this.#seq;
     if (options.reset) this.session.reset();
 
-    this._bucket = new Bucket(120, 6e4);
+    this.#bucket = new Bucket(120, 6e4);
   }
 
   /**
@@ -249,7 +266,7 @@ export class Shard extends Emitter {
     }
 
     // (1) If a socket is already defined, destroy it.
-    if (this._ws) {
+    if (this.#ws) {
       this._debug(
         "A connection is already present, cleaning up before reconnecting."
       );
@@ -258,12 +275,12 @@ export class Shard extends Emitter {
 
     // (3) Setup serialization and compression.
     const q = new URLSearchParams();
-    const encoding = this.manager.useEtf ? "etf" : "json";
+    const encoding = this.#manager.useEtf ? "etf" : "json";
     q.append("encoding", encoding);
 
-    this._serialization = Serialization.create(encoding);
-    if (this.manager.compression) {
-      this._compression = Compression.create(this.manager.compression)
+    this.#serialization = Serialization.create(encoding);
+    if (this.#manager.compression) {
+      this.#compression = Compression.create(this.#manager.compression)
         .on("data", (buffer) => this._packet(buffer))
         .on("error", (e) => this._debug(`Compression Error: ${e.message}`))
         .on("debug", (message) => this._debug(message));
@@ -280,27 +297,27 @@ export class Shard extends Emitter {
     this.session.waitForHello();
 
     // (5) Define the WebSocket.
-    const uri = this.manager.gatewayUrl.endsWith("/")
-      ? this.manager.gatewayUrl
-      : `${this.manager.gatewayUrl}/`;
+    const uri = this.#manager.gatewayUrl.endsWith("/")
+      ? this.#manager.gatewayUrl
+      : `${this.#manager.gatewayUrl}/`;
 
-    this._ws = new WebSocket(`${uri}?${q}`);
-    this._ws.onopen = this._open.bind(this);
-    this._ws.onerror = this._error.bind(this);
-    this._ws.onclose = this._close.bind(this);
-    this._ws.onmessage = this._message.bind(this);
+    this.#ws = new WebSocket(`${uri}?${q}`);
+    this.#ws.onopen = this._open.bind(this);
+    this.#ws.onerror = this._error.bind(this);
+    this.#ws.onclose = this._close.bind(this);
+    this.#ws.onmessage = this._message.bind(this);
   }
 
   /**
    * Handles a decompressed packet from discord.
-   * @param data The decompressed packet
+   * @param {RawData} data The decompressed packet
    * @private
    */
   private _packet(data: RawData) {
     let pk!: Payload<Dictionary>;
     try {
-      pk = this._serialization.decode(data) as Payload<Dictionary>;
-      this.manager.emit(SMEvent.RawPacket, pk, this);
+      pk = this.#serialization.decode(data) as Payload<Dictionary>;
+      this.#manager.emit(SMEvent.RawPacket, pk, this);
     } catch (e) {
       this.emit(ShardEvent.Error, e);
       return;
@@ -329,9 +346,9 @@ export class Shard extends Emitter {
     }
 
     if (pk.s != null) {
-      if (this._seq !== -1 && pk.s > this._seq + 1)
-        this._debug(`Non-consecutive sequence [${this._seq} => ${pk.s}]`);
-      this._seq = pk.s;
+      if (this.#seq !== -1 && pk.s > this.#seq + 1)
+        this._debug(`Non-consecutive sequence [${this.#seq} => ${pk.s}]`);
+      this.#seq = pk.s;
     }
 
     switch (pk.op) {
@@ -350,7 +367,7 @@ export class Shard extends Emitter {
           break;
         }
 
-        this._seq = -1;
+        this.#seq = -1;
         this.session.reset();
         this.emit(ShardEvent.InvalidSession);
         break;
@@ -404,13 +421,13 @@ export class Shard extends Emitter {
   private _open(): void {
     this.status = Status.Nearly;
     this._debug(
-      `Connected. ${this._ws?.url} in ${Date.now() - this.connectedAt}`
+      `Connected. ${this.#ws?.url} in ${Date.now() - this.connectedAt}`
     );
 
-    if (this._queue.length) {
-      this._debug(`${this._queue.length} packets waiting... sending all now.`);
-      while (this._queue.length > 0) {
-        const pk = this._queue.shift();
+    if (this.#queue.length) {
+      this._debug(`${this.#queue.length} packets waiting... sending all now.`);
+      while (this.#queue.length > 0) {
+        const pk = this.#queue.shift();
         if (!pk) break;
         this.send(pk);
       }
@@ -425,12 +442,13 @@ export class Shard extends Emitter {
    */
   private _error(event: WebSocket.ErrorEvent): void {
     const error = event && event.error ? event.error : event;
-    if (error) this.manager.emit(SMEvent.ShardError, this, error);
+    if (error) this.#manager.emit(SMEvent.ShardError, this, error);
     return;
   }
 
   /**
    * Handles a websocket closed event.
+   * @param {WebSocket.CloseEvent} event The close event data.
    * @private
    */
   private _close(event: WebSocket.CloseEvent): void {
@@ -440,8 +458,8 @@ export class Shard extends Emitter {
       }, reason: ${event.reason ?? "unknown"}`
     );
 
-    if (this._seq !== -1) this._closingSeq = this._seq;
-    this._seq = -1;
+    if (this.#seq !== -1) this.#closingSeq = this.#seq;
+    this.#seq = -1;
     this.status = Status.Disconnected;
 
     this.heartbeat.reset();
@@ -450,19 +468,22 @@ export class Shard extends Emitter {
 
   /**
    * Handles a websocket message.
+   * @param {WebSocket.MessageEvent} event The message event.
    * @private
    */
   private _message(event: WebSocket.MessageEvent): void {
-    if (this._compression) this._compression.add(event.data);
-    else this._packet(event.data);
+    return this.#compression
+      ? this.#compression.add(event.data)
+      : this._packet(event.data);
   }
 
   /**
    * Emits a debug message.
+   * @param {string} message The debug message.
    * @private
    */
   private _debug(message: string) {
-    return this.manager.emit("debug", `(Shard ${this.id}) ${message.trim()}`);
+    return this.#manager.emit("debug", `(Shard ${this.id}) ${message.trim()}`);
   }
 }
 
