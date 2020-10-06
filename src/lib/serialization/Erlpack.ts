@@ -5,32 +5,29 @@
  */
 
 import { RawData, Serialization } from "./Serialization";
-import { CustomError } from "../../errors/CustomError";
+import { CustomError, Payload } from "../..";
 
-import type { Payload } from "../../constants";
-
-let etf: typeof import("erlpack");
+let erlpack: typeof import("etf.js");
 try {
-  etf = require("erlpack");
+  erlpack = require("etf.js");
 } catch {
   // no-op
 }
 
-/**
- * Serialization handler for the ETF format.
- */
-export class Erlpack extends Serialization {
+export class EtfJS extends Serialization {
   /**
    * Encodes a payload into the etf format.
-   * @param payload The payload to encode.
+   * @param {Payload} payload The payload to encode.
+   * @returns {Uint8Array}
    */
-  public encode(payload: Payload): Buffer {
-    return etf.pack(payload);
+  public encode(payload: Payload): Uint8Array {
+    return erlpack.pack(payload);
   }
 
   /**
    * Decodes a decompressed websocket packet into a json payload.
-   * @param raw Decompressed websocket packet.
+   * @param {RawData} raw Decompressed websocket packet.
+   * @returns {Payload}
    */
   public decode(raw: RawData): Payload {
     let _raw: Buffer | null = null;
@@ -43,6 +40,6 @@ export class Erlpack extends Serialization {
       throw new CustomError("SerializationError", "Received invalid data.");
     }
 
-    return etf.unpack(_raw);
+    return erlpack.unpack(_raw) as Payload;
   }
 }
