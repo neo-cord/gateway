@@ -6,7 +6,6 @@
 
 import {
   Collection,
-  define,
   Emitter,
   Listener,
   mergeObjects,
@@ -21,8 +20,9 @@ import {
   ShardEvent,
   SMEvent,
   USER_AGENT,
-} from "../constants";
+} from "../util/constants";
 import { Shard } from "./Shard";
+import { defineMultiple } from "../util/defineMulitple";
 
 import type { CompressionType } from "./compression";
 import type WebSocket from "ws";
@@ -100,8 +100,9 @@ export class ShardManager extends Emitter {
     options = mergeObjects(options, DEFAULTS);
     super();
 
-    const wr = ["_limit", "_queue", "_shards"];
-    for (const w of wr) define({ writable: true })(this, w);
+    defineMultiple(this, ["_limits", "_queue", "_shards"], {
+      writable: true,
+    });
 
     this.shards = new Collection();
     this.destroyed = this.reconnecting = this.ready = false;
@@ -138,7 +139,7 @@ export class ShardManager extends Emitter {
   public set token(token: string) {
     Object.defineProperty(this, "token", {
       value: token,
-      writable: true
+      writable: true,
     });
   }
 

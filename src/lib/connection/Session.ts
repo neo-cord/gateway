@@ -4,42 +4,44 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { define, Timers } from "@neocord/utils";
-import { GatewayOpCode, Status } from "../../constants";
+import { Timers } from "@neocord/utils";
+import { GatewayOpCode, Status } from "../../util/constants";
 
 import type { Shard } from "../Shard";
 import type { ShardManager } from "../Manager";
 
 export class Session {
   /**
-   * The shard that this session is for.
-   */
-  public readonly shard: Shard;
-
-  /**
    * The id of this session.
+   * @type {string}
    */
   public id?: string;
 
   /**
    * The hello timeout.
+   * @type {?NodeJS.Timeout}
    * @private
    */
-  private _helloTimeout?: NodeJS.Timeout;
+  #helloTimeout?: NodeJS.Timeout;
 
   /**
-   * @param shard
+   * The shard that this session is for.
+   * @type {Shard}
+   */
+  readonly #shard: Shard;
+
+  /**
+   * @param {Shard} shard The shard.
    */
   public constructor(shard: Shard) {
-    this.shard = shard;
-    define({ writable: true })(this, "_helloTimeout");
+    this.#shard = shard;
   }
 
   /**
    * The sharding manager.
    */
   public get manager(): ShardManager {
-    return this.shard.manager;
+    return this.#shard.manager;
   }
 
   /**
@@ -47,9 +49,10 @@ export class Session {
    */
   public reset(): void {
     delete this.id;
-    if (this._helloTimeout) {
-      Timers.clearTimeout(this._helloTimeout);
-      this._helloTimeout = undefined;
+
+    if (this.#helloTimeout) {
+      Timers.clearTimeout(this.#helloTimeout);
+      this.#helloTimeout = undefined;
     }
   }
 
@@ -58,11 +61,11 @@ export class Session {
    */
   public waitForHello(): void {
     this._debug("Setting the hello timeout for 30s");
-    this._helloTimeout = Timers.setTimeout(() => {
+    this.#helloTimeout = Timers.setTimeout(() => {
       this._debug(
         "Did not receive HELLO op in time. Destroying and reconnecting."
       );
-      this.shard.destroy({ reset: true, code: 4000 });
+      this.#shard.destroy({ reset: true, code: 4000 });
     }, 3e5);
   }
 
@@ -70,9 +73,9 @@ export class Session {
    * Clears the HELLO timeout and identifies a new session.
    */
   public hello(): void {
-    if (this._helloTimeout) {
-      Timers.clearTimeout(this._helloTimeout);
-      this._helloTimeout = undefined;
+    if (this.#helloTimeout) {
+      Timers.clearTimeout(this.#helloTimeout);
+      this.#helloTimeout = undefined;
     }
 
     this.identify();
@@ -97,12 +100,12 @@ export class Session {
     const d = {
       token: this.manager.token,
       properties: this.manager.options.properties,
-      shard: [this.shard.id, Number(this.manager.options.shardCount)],
+      shard: [this.#shard.id, Number(this.manager.options.shardCount)],
       intents: this.manager.options.intents,
     };
 
     this._debug("Identifying as a new session...");
-    this.shard.send({ op: GatewayOpCode.Identify, d }, true);
+    this.#shard.send({ op: GatewayOpCode.Identify, d }, true);
   }
 
   /**
@@ -115,25 +118,27 @@ export class Session {
       return;
     }
 
-    this.shard.status = Status.Resuming;
+    this.#shard.status = Status.Resuming;
     const d = {
       token: this.manager.token,
-      sequence: this.shard.closingSequence,
+      sequence: this.#shard.closingSequence,
       session_id: this.id,
     };
 
     this._debug(
-      `Resuming ${this.id}; Sequence = ${this.shard.closingSequence}`
+      `Resuming ${this.id}; Sequence = ${this.#shard.closingSequence}`
     );
-    this.shard.send({ op: GatewayOpCode.Resume, d }, true);
+    this.#shard.send({ op: GatewayOpCode.Resume, d }, true);
   }
 
   /**
+   * Used for debugging the shard's session.
+   * @param {string} message The debug message.
    * @private
    */
   private _debug(message: string): number {
     return this.manager.emit(
-      `(Shard ${this.shard}) Session: ${message.trim()}`
+      `(Shard ${this.#shard}) Session: ${message.trim()}`
     );
   }
 }

@@ -4,58 +4,61 @@
  * See the LICENSE file in the project root for more details.
  */
 
-import { GatewayOpCode, Status } from "../../constants";
-import { define, Timers } from "@neocord/utils";
+import { GatewayOpCode, Status } from "../../util/constants";
+import { Timers } from "@neocord/utils";
 
 import type { Shard } from "../Shard";
 
-/**
- * Handles a shards heartbeat.
- */
 export class Heartbeat {
   /**
    * Whether or not our last heartbeat was acknowledged.
+   * @type {boolean}
    */
   public acked = false;
 
   /**
    * When we last sent a heartbeat.
+   * @type {number}
    */
   public last = 0;
 
   /**
    * The heartbeat interval.
+   * @type {number}
    */
   public interval?: number;
 
   /**
-   * The shard this heartbeat belongs to.
-   */
-  public shard: Shard;
-
-  /**
    * The heartbeat latency.
+   * @type {number}
    */
   public latency = 0;
 
   /**
-   * The node.js interval.
+   * The heartbeat interval.
+   * @type {?NodeJS.Timeout}
    * @private
    */
-  private _interval?: NodeJS.Timeout;
+  #interval?: NodeJS.Timeout;
 
   /**
-   * @param shard
+   * The shard this heartbeat belongs to.
+   * @type {Shard}
+   */
+  readonly #shard: Shard;
+
+  /**
+   * @param {Shard} shard The shard.
    */
   public constructor(shard: Shard) {
-    this.shard = shard;
-    define({ writable: true })(this, "_interval");
+    this.#shard = shard;
   }
 
   /**
    * Sets the heartbeat interval.
    * @param ms
    */
+  // eslint-disable-next-line accessor-pairs
   public set heartbeatInterval(ms: number) {
     this.interval = ms;
     this._init();
@@ -69,9 +72,9 @@ export class Heartbeat {
     this.last = 0;
     delete this.interval;
 
-    if (this._interval) {
-      Timers.clearInterval(this._interval);
-      this._interval = undefined;
+    if (this.#interval) {
+      Timers.clearInterval(this.#interval);
+      this.#interval = undefined;
     }
   }
 
@@ -97,7 +100,7 @@ export class Heartbeat {
       Status.WaitingForGuilds,
       Status.Identifying,
       Status.Resuming,
-    ].includes(this.shard.status)
+    ].includes(this.#shard.status)
   ): void {
     if (ignore && !this.acked) {
       this._debug(
@@ -108,28 +111,30 @@ export class Heartbeat {
         "Didn't receive a heartbeat last time. Assuming zombie connection, destroying and reconnecting."
       );
       this._debug(
-        `Zombie Connection: Stats = ${Status[this.shard.status]}, Sequence = ${
-          this.shard.sequence
+        `Zombie Connection: Stats = ${Status[this.#shard.status]}, Sequence = ${
+          this.#shard.sequence
         }`
       );
-      return this.shard.destroy({ code: 4009, reset: true });
+      return this.#shard.destroy({ code: 4009, reset: true });
     }
 
     this._debug(`‹${reason}› Sending a heartbeat to the gateway.`);
-    this.shard.send({ op: GatewayOpCode.Heartbeat, d: this.shard.sequence });
+    this.#shard.send({ op: GatewayOpCode.Heartbeat, d: this.#shard.sequence });
     this.acked = false;
     this.last = Date.now();
   }
 
   /**
-   * Emits a heartbeat event on the internal sharding manager.
+   * Used for debugging the shard's heartbeat.
+   * @param {string} message The debug message.
    * @private
    */
   private _debug(message: string): void {
-    this.shard.manager.emit(
+    this.#shard.manager.emit(
       "debug",
-      `(Shard ${this.shard.id}) Heartbeat: ${message}`
+      `(Shard ${this.#shard.id}) Heartbeat: ${message}`
     );
+
     return;
   }
 
@@ -139,7 +144,7 @@ export class Heartbeat {
    */
   private _init(): void {
     this._debug(`Now sending a heartbeat every: ${this.interval} ms`);
-    this._interval = Timers.setInterval(
+    this.#interval = Timers.setInterval(
       () => this.new("interval"),
       this.interval as number
     );
